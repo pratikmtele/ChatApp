@@ -22,11 +22,7 @@ app.use(express.static("public"));
 app.use(cookieParser());
 
 // importing routers here
-import userRouter from "./routes/user.route";
-
-// Insecured routes
+import userRouter from "./routes/user.route.js";
 app.use("/api/v1/users", userRouter);
-
-// secured routers
 
 export { app };
