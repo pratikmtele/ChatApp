@@ -198,6 +198,25 @@ const logout = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
+const searchUsers = asyncHandler(async (req, res) => {
+  const keyword = req.query.search
+    ? {
+        $or: [
+          { fullname: { $regex: req.query.search, $options: "i" } },
+          { email: { $regex: req.query.search, $options: "i" } },
+        ],
+      }
+    : {};
+
+  const users = await User.find(keyword)
+    .find({ _id: { $ne: req.user._id } })
+    .select("-password");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, users, "Users searched successfully"));
+});
+
 export {
   signup,
   generateAccessToken,
@@ -207,4 +226,5 @@ export {
   updateAccountDetails,
   changePassword,
   logout,
+  searchUsers,
 };

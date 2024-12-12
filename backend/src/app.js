@@ -23,6 +23,10 @@ app.use(cookieParser());
 
 // importing routers here
 import userRouter from "./routes/user.route.js";
+import chatRouter from "./routes/chat.route.js";
+
+// routes
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/chats", chatRouter);
 
 export { app };

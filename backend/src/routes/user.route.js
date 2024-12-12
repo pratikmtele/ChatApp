@@ -4,6 +4,7 @@ import {
   getCurrentUser,
   login,
   logout,
+  searchUsers,
   signup,
   updateAccountDetails,
   uploadAvatar,
@@ -18,6 +19,7 @@ userRouter.route("/signup").post(signup);
 userRouter.route("/login").post(login);
 
 // secured routes
+userRouter.route("/").get(verifyAccessToken, searchUsers);
 userRouter
   .route("/update-avatar")
   .post(verifyAccessToken, upload.single("avatar"), uploadAvatar);

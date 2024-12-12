@@ -22,6 +22,7 @@ const messageSchema = new Schema(
       required: function () {
         return this.messageType === "text";
       },
+      trim: true,
     },
     fileUrl: {
       type: String,
