@@ -7,7 +7,7 @@ import { Login, Register } from "./pages/index.js";
 
 const routes = createBrowserRouter([
   {
-    path: "/",
+    path: "/login",
     element: <Login />,
   },
   {
