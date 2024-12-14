@@ -8,6 +8,7 @@ const setupSocketServer = (server) => {
       methods: ["GET", "POST", "PATCH", "DELETE"],
       credentials: true,
     },
+    pingTimeout: 60000,
   });
 
   const userSocketMap = new Map();
