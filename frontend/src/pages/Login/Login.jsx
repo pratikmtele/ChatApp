@@ -1,13 +1,106 @@
 import React, { useState } from "react";
 import { TextingImage, Logo } from "../../assets/index.js";
 import { Input, Button, CheckBox } from "../../components/index.js";
+import { Link } from "react-router-dom";
+import { URL } from "../../assets/index.js";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { useDispatch } from "react-redux";
+import { login } from "../../features/userSlice.js";
 
 function Login() {
+  const [pending, setPending] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const onChange = () => {};
+  const [userData, setUserData] = useState({
+    username: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState("");
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const onChange = (e) => {
+    setUserData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const ShowPassword = () => {
     setIsPasswordVisible((prev) => !prev);
+  };
+
+  // validation config
+  const validationConfig = {
+    username: [
+      { required: true, message: "Username is required" },
+      {
+        minLength: 3,
+        message: "Username should be at least 3 characters long",
+      },
+    ],
+    password: [
+      { required: true, message: "Password is required" },
+      {
+        minLength: 6,
+        message: "Password should be at least 6 characters long",
+      },
+    ],
+  };
+
+  // function to validate input fields
+  const validateData = (formData) => {
+    const errors = {};
+    Object.entries(formData).forEach(([key, value]) => {
+      validationConfig[key].some((rule) => {
+        if (rule.required && !value) {
+          errors[key] = rule.message;
+          return true;
+        }
+
+        if (rule.minLength && value.length < rule.minLength) {
+          errors[key] = rule.message;
+          return true;
+        }
+
+        if (rule.pattern && !rule.pattern.test(value)) {
+          errors[key] = rule.message;
+          return true;
+        }
+      });
+    });
+
+    setErrors(errors);
+    return errors;
+  };
+
+  const onLogin = async (e) => {
+    e.preventDefault();
+    setPending(true);
+
+    const errorData = validateData(userData);
+    if (Object.keys(errorData).length !== 0) {
+      setPending(false);
+      return;
+    }
+
+    axios
+      .post(`${URL}/api/v1/users/login`, userData, {
+        withCredentials: true,
+      })
+      .then((response) => {
+        dispatch(login(response.data.data));
+        toast.success(response.data.message);
+        setPending(false);
+        setUserData({
+          username: "",
+          password: "",
+        });
+        navigate("/");
+      })
+      .catch((error) => {
+        toast.error(error.response.data.message);
+        setPending(false);
+      })
+      .finally(() => setPending(false));
   };
 
   return (
@@ -31,14 +124,16 @@ function Login() {
           <h1 className="text-2xl font-bold mt-8 lg:mt-5">
             Log into your Account
           </h1>
-          <form className="mt-7">
+          <form className="mt-7" onSubmit={onLogin}>
             <Input
               type="text"
               name="username"
               id="username"
               placeholder="Username"
+              value={userData.username}
               className="border border-t-0 border-x-0 border-gray-400 group-focus:static outline-none h-12 lg:h-[40px]"
               onChange={onChange}
+              error={errors.username}
             />
             <div className="relative">
               <i
@@ -49,11 +144,13 @@ function Login() {
               ></i>
               <Input
                 type={`${isPasswordVisible ? "text" : "password"}`}
-                name="Password"
+                name="password"
                 id="password"
                 placeholder="Password"
+                value={userData.password}
                 className="border border-t-0 border-x-0 mt-7 lg:mt-5 pr-6 border-gray-400 group-focus:static outline-none h-12 lg:h-[40px]"
                 onChange={onChange}
+                error={errors.password}
               />
             </div>
             <div className="flex items-center justify-between mt-5">
@@ -63,13 +160,14 @@ function Login() {
             <Button
               type="submit"
               label="LOGIN"
+              pending={pending}
               className="w-full h-12 lg:h-10 mt-5 text-white gradient-color hover:opacity-80 transition-all ease-in-out duration-300 font-semibold tracking-wide rounded-md"
             />
             <p className="mt-7 text-center">
               Don't have an account?
-              <a href="#" className="ml-1 font-semibold">
+              <Link to="/register" className="ml-1 font-semibold">
                 Register
-              </a>
+              </Link>
             </p>
           </form>
         </div>
