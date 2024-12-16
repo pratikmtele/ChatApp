@@ -5,6 +5,7 @@ import {
   login,
   logout,
   searchUsers,
+  sendOTP,
   signup,
   updateAccountDetails,
   uploadAvatar,
@@ -17,6 +18,7 @@ const userRouter = express.Router();
 // Insecured routes
 userRouter.route("/signup").post(signup);
 userRouter.route("/login").post(login);
+userRouter.route("/send-otp").post(sendOTP);
 
 // secured routes
 userRouter.route("/").get(verifyAccessToken, searchUsers);

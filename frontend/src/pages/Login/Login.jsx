@@ -155,7 +155,7 @@ function Login() {
             </div>
             <div className="flex items-center justify-between mt-5">
               <CheckBox />
-              <a href="#">Forgot Password</a>
+              <Link to="/forget-password">Forgot Password</Link>
             </div>
             <Button
               type="submit"

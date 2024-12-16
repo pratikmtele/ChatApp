@@ -6,6 +6,7 @@ import {
   uploadOnCloudinary,
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
+import MailSender from "../mail/mailSender.js";
 
 const signup = asyncHandler(async (req, res) => {
   const { username, email, fullname, password } = req.body;
@@ -246,6 +247,39 @@ const searchUsers = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, users, "Users searched successfully"));
 });
 
+const sendOTP = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, {}, "Email Id is missing"));
+  }
+
+  const user = await User.findOne({ email: email }).select("-password");
+
+  if (!user) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, {}, "Email Id doesn't exist in the database"));
+  }
+
+  try {
+    const OTP = Math.floor(1000 + Math.random() * 9000);
+
+    MailSender(email, OTP);
+
+    return res.status(200).json(new ApiResponse(200, {}, "Otp Sent"));
+  } catch (error) {
+    console.log(error);
+    return res
+      .status(400)
+      .json(
+        new ApiResponse(400, {}, "Something went wrong while sending otp.")
+      );
+  }
+});
+
 export {
   signup,
   generateAccessToken,
@@ -256,4 +290,5 @@ export {
   changePassword,
   logout,
   searchUsers,
+  sendOTP,
 };

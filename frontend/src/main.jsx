@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import { Login, Register } from "./pages/index.js";
+import { ForgotPassword, Login, Register } from "./pages/index.js";
 import "react-toastify/dist/ReactToastify.css";
 import store from "./store/store.js";
 import { Provider } from "react-redux";
@@ -20,6 +20,10 @@ const routes = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
+      },
+      {
+        path: "/forget-password",
+        element: <ForgotPassword />,
       },
     ],
   },
