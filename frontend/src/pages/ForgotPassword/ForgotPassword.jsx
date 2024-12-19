@@ -47,6 +47,7 @@ function ForgotPassword() {
       .then((response) => {
         toast.success(response.data.message);
         setPending(false);
+        navigate("/verify-otp", { state: email });
       })
       .catch((error) => {
         toast.error(error.response.data.message);
@@ -63,8 +64,8 @@ function ForgotPassword() {
           Forget Password
         </h1>
         <p className="text-center text-md text-white h-fit w-[440px] mt-4">
-          Connect and message your friends and family privately and securely
-          with Talkify.
+          Passwords protect your account. Update yours regularly for better
+          security.
         </p>
       </div>
       <div className="px-2 lg:px-0 lg:w-1/2 flex flex-col lg:justify-center lg:items-center">
@@ -98,7 +99,7 @@ function ForgotPassword() {
               className="w-full h-12 lg:h-10 mt-5 text-white gradient-color hover:opacity-80 transition-all ease-in-out duration-300 font-semibold tracking-wide rounded-md"
             />
             <p className="mt-7 text-center">
-              Back to
+              Already have an account?
               <Link to="/login" className="ml-1 font-semibold">
                 Login
               </Link>

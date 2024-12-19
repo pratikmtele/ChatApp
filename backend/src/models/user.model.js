@@ -39,6 +39,10 @@ const userSchema = new Schema(
       type: Boolean,
       dafault: false,
     },
+    otp: {
+      otp: { type: Number },
+      expirationTime: { type: Date },
+    },
   },
   {
     timestamps: true,

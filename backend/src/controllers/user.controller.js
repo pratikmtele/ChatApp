@@ -265,7 +265,15 @@ const sendOTP = asyncHandler(async (req, res) => {
   }
 
   try {
-    const OTP = Math.floor(1000 + Math.random() * 9000);
+    const OTP = Math.floor(100000 + Math.random() * 900000);
+
+    const currentDate = new Date();
+    const expirationTime = new Date(currentDate.getTime() + 1 * 60000);
+
+    // save otp in database
+    user.otp.otp = OTP;
+    user.otp.expirationTime = expirationTime;
+    user.save();
 
     MailSender(email, OTP);
 
@@ -280,6 +288,92 @@ const sendOTP = asyncHandler(async (req, res) => {
   }
 });
 
+const verifyOTP = asyncHandler(async (req, res) => {
+  const { otp, email } = req.body;
+
+  if (!otp) {
+    return res.status(404).json(new ApiResponse(404, {}, "OTP is missing"));
+  }
+
+  const user = await User.findOne({ email: email }).select("-password");
+
+  if (!user)
+    return res
+      .status(400)
+      .json(400, {}, "Something went wrong while verifying otp");
+
+  const currentTime = new Date();
+  const otpexpirationTime = new Date(user.otp.expirationTime);
+
+  if (currentTime > otpexpirationTime) {
+    return res
+      .status(400)
+      .json(
+        new ApiResponse(
+          400,
+          {},
+          "The OTP has expired. Please request a new one."
+        )
+      );
+  }
+
+  if (parseInt(otp) !== user.otp.otp) {
+    return res.status(400).json(new ApiResponse(400, {}, "Invalid OTP"));
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    user._id,
+    {
+      $unset: {
+        otp: {},
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, updatedUser, "OTP Verified successfully"));
+});
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { password: newPassword, email } = req.body;
+
+  if (!newPassword) {
+    return res
+      .status(404)
+      .json(new ApiResponse(404, {}, "Password is missing"));
+  }
+
+  const user = await User.findOne({ email: email });
+
+  if (!user)
+    return res
+      .status(400)
+      .json(new ApiResponse(400, {}, "Something went wrong"));
+
+  if (await user.isPasswordCorrect(newPassword)) {
+    return res
+      .status(400)
+      .send(
+        new ApiResponse(
+          400,
+          {},
+          "The new password cannot be the same as the old password."
+        )
+      );
+  }
+
+  user.password = newPassword;
+  user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password reset successfully"));
+});
+
 export {
   signup,
   generateAccessToken,
@@ -291,4 +385,6 @@ export {
   logout,
   searchUsers,
   sendOTP,
+  verifyOTP,
+  resetPassword,
 };

@@ -31,3 +31,14 @@ body {
   );
   filter: progid: DXImageTransform.Microsoft.gradient(startColorstr="#0051FF", endColorstr="#0600A6", GradientType=1);
 }
+
+.no-spinner::-webkit-outer-spin-button,
+.no-spinner::-webkit-inner-spin-button {
+  @apply appearance-none;
+  margin: 0;
+}
+
+/* For Firefox */
+.no-spinner[type="number"] {
+  @apply appearance-none;
+}
