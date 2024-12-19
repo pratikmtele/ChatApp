@@ -10,7 +10,6 @@ import axios from "axios";
 function ForgotPassword() {
   const [pending, setPending] = useState(false);
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState(0);
   const [error, setErrors] = useState("");
 
   const navigate = useNavigate();
@@ -47,7 +46,8 @@ function ForgotPassword() {
       .then((response) => {
         toast.success(response.data.message);
         setPending(false);
-        navigate("/verify-otp", { state: email });
+        const token = response.data.data.token;
+        navigate("/verify-otp", { state: token });
       })
       .catch((error) => {
         toast.error(error.response.data.message);

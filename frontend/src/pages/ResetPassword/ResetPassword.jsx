@@ -18,10 +18,10 @@ function ResetPassword() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state || "";
+  const token = location.state || "";
 
   useEffect(() => {
-    if (!email) {
+    if (!token) {
       navigate("/login");
     }
   }, []);
@@ -83,13 +83,9 @@ function ResetPassword() {
       return;
     }
 
-    if (!email) {
-      toast.error("Something went wrong");
-    }
-
     try {
       const response = await axios.patch(`${URL}/api/v1/users/reset-password`, {
-        email: email,
+        token: token,
         password: passwords.password,
       });
 

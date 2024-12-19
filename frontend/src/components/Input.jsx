@@ -15,6 +15,7 @@ const Input = forwardRef(
       max,
       step,
       onInput,
+      disabled,
     },
     ref
   ) => {
@@ -28,6 +29,7 @@ const Input = forwardRef(
           className={`${className}`}
           placeholder={placeholder}
           value={value}
+          disabled={disabled}
           onChange={onChange}
           min={min}
           max={max}

@@ -25,13 +25,13 @@ function OTP() {
 
   const navigate = useNavigate();
   const routerLocation = useLocation();
-  const email = routerLocation.state || "";
+  const token = routerLocation.state || "";
 
   useEffect(() => {
     if (ref1.current) {
       ref1.current.focus();
     }
-    if (!email) navigate("/login");
+    if (!token) navigate("/login");
   }, []);
 
   const onChange = (e) => {
@@ -142,11 +142,11 @@ function OTP() {
     );
 
     axios
-      .post(`${URL}/api/v1/users/verify-otp`, { otp, email: email })
+      .post(`${URL}/api/v1/users/verify-otp`, { otp, token: token })
       .then((response) => {
         toast.success(response.data.message);
         setPending(false);
-        navigate("/reset-password", { state: email });
+        navigate("/reset-password", { state: token });
       })
       .catch((error) => {
         toast.error(error.response.data.message);

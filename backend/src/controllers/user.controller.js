@@ -7,6 +7,8 @@ import {
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
 import MailSender from "../mail/mailSender.js";
+import JWT from "jsonwebtoken";
+import { log } from "console";
 
 const signup = asyncHandler(async (req, res) => {
   const { username, email, fullname, password } = req.body;
@@ -277,9 +279,16 @@ const sendOTP = asyncHandler(async (req, res) => {
 
     MailSender(email, OTP);
 
-    return res.status(200).json(new ApiResponse(200, {}, "Otp Sent"));
+    const token = JWT.sign({ email: email }, process.env.JWT_SECRET);
+
+    if (!token) {
+      return res
+        .status(400)
+        .json(new ApiResponse(400, {}, "Token is not generated. Try again"));
+    }
+
+    return res.status(200).json(new ApiResponse(200, { token }, "Otp Sent"));
   } catch (error) {
-    console.log(error);
     return res
       .status(400)
       .json(
@@ -289,13 +298,21 @@ const sendOTP = asyncHandler(async (req, res) => {
 });
 
 const verifyOTP = asyncHandler(async (req, res) => {
-  const { otp, email } = req.body;
+  const { otp, token } = req.body;
 
   if (!otp) {
     return res.status(404).json(new ApiResponse(404, {}, "OTP is missing"));
   }
+  console.log(token);
+  const decodedToken = JWT.verify(token, process.env.JWT_SECRET);
+  console.log(decodedToken);
+  if (!decodedToken) {
+    return res.status(401).json(new ApiResponse(401, {}, "Unauthorized"));
+  }
 
-  const user = await User.findOne({ email: email }).select("-password");
+  const user = await User.findOne({ email: decodedToken.email }).select(
+    "-password"
+  );
 
   if (!user)
     return res
@@ -321,25 +338,19 @@ const verifyOTP = asyncHandler(async (req, res) => {
     return res.status(400).json(new ApiResponse(400, {}, "Invalid OTP"));
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
-    user._id,
-    {
-      $unset: {
-        otp: {},
-      },
+  await User.findByIdAndUpdate(user._id, {
+    $unset: {
+      otp: {},
     },
-    {
-      new: true,
-    }
-  );
+  });
 
   return res
     .status(200)
-    .json(new ApiResponse(200, updatedUser, "OTP Verified successfully"));
+    .json(new ApiResponse(200, {}, "OTP Verified successfully"));
 });
 
 const resetPassword = asyncHandler(async (req, res) => {
-  const { password: newPassword, email } = req.body;
+  const { password: newPassword, token } = req.body;
 
   if (!newPassword) {
     return res
@@ -347,7 +358,13 @@ const resetPassword = asyncHandler(async (req, res) => {
       .json(new ApiResponse(404, {}, "Password is missing"));
   }
 
-  const user = await User.findOne({ email: email });
+  const decodedToken = JWT.verify(token, process.env.JWT_SECRET);
+
+  if (!decodedToken) {
+    return res.status(401).json(new ApiResponse(401, {}, "Unauthorized"));
+  }
+
+  const user = await User.findOne({ email: decodedToken.email });
 
   if (!user)
     return res

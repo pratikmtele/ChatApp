@@ -9,6 +9,7 @@ import {
   OTP,
   Register,
   ResetPassword,
+  Home,
 } from "./pages/index.js";
 import "react-toastify/dist/ReactToastify.css";
 import store from "./store/store.js";
@@ -19,6 +20,10 @@ const routes = createBrowserRouter([
     path: "/",
     element: <App />,
     children: [
+      {
+        path: "/",
+        element: <Home />,
+      },
       {
         path: "/login",
         element: <Login />,
