@@ -8,7 +8,6 @@ import {
 } from "../utils/cloudinary.js";
 import MailSender from "../mail/mailSender.js";
 import JWT from "jsonwebtoken";
-import { log } from "console";
 
 const signup = asyncHandler(async (req, res) => {
   const { username, email, fullname, password } = req.body;
@@ -303,9 +302,9 @@ const verifyOTP = asyncHandler(async (req, res) => {
   if (!otp) {
     return res.status(404).json(new ApiResponse(404, {}, "OTP is missing"));
   }
-  console.log(token);
+
   const decodedToken = JWT.verify(token, process.env.JWT_SECRET);
-  console.log(decodedToken);
+
   if (!decodedToken) {
     return res.status(401).json(new ApiResponse(401, {}, "Unauthorized"));
   }

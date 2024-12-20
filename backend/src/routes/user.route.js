@@ -36,6 +36,6 @@ userRouter
   .patch(verifyAccessToken, updateAccountDetails);
 
 userRouter.route("/current-user").get(verifyAccessToken, getCurrentUser);
-userRouter.route("/logout").post(verifyAccessToken, logout);
+userRouter.route("/logout").get(verifyAccessToken, logout);
 
 export default userRouter;
