@@ -2,15 +2,19 @@ import React, { useState } from "react";
 import { Avatar, InfoImage } from "../assets";
 import { Input } from "../components/index.js";
 
-function Profile() {
+function Profile({ isOpen, setIsOpen }) {
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const [isDetailsEditable, setIsDetailsEditable] = useState(false);
   const onImageChange = (e) => {};
   const onDetailsSave = (e) => {
     setIsDetailsEditable(false);
   };
-  return (
-    <div className="bg-white z-50 border rounded-md border-black w-[400px] flex flex-col items-center p-2 absolute right-1 mt-1">
+  return isOpen ? (
+    <div className="bg-white z-50 border rounded-md border-black w-[400px] flex flex-col items-center p-2 absolute right-2 mt-1">
+      <i
+        class="fa-solid fa-xmark absolute right-2 text-xl top-0 cursor-pointer"
+        onClick={() => setIsOpen(false)}
+      ></i>
       <h1 className="font-bold mt-2 mb-2 text-xl">Profile</h1>
       <p className="mb-4">Your Profile Information</p>
       <div className="w-28 rounded-full border border-black p-1 relative">
@@ -127,7 +131,7 @@ function Profile() {
         </div>
       </div>
     </div>
-  );
+  ) : null;
 }
 
 export default Profile;

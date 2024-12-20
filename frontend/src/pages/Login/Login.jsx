@@ -87,17 +87,16 @@ function Login() {
         withCredentials: true,
       })
       .then((response) => {
+        console.log(response.data.data);
+
         dispatch(login(response.data.data));
         toast.success(response.data.message);
         setPending(false);
-        setUserData({
-          username: "",
-          password: "",
-        });
+        setUserData({ username: "", password: "" });
         navigate("/");
       })
       .catch((error) => {
-        toast.error(error.response.data.message);
+        toast.error(error.response?.data?.message || "An error occurred");
         setPending(false);
       })
       .finally(() => setPending(false));
