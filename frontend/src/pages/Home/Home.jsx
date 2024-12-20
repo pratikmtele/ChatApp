@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 function Home() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const navigate = useNavigate();
-  const user = useSelector((state) => state.userData);
+  const user = useSelector((state) => state.user.userData);
 
   useEffect(() => {
     if (!user) {

@@ -1,14 +1,91 @@
 import React, { useState } from "react";
-import { Avatar, InfoImage } from "../assets";
+import { Avatar, InfoImage, URL } from "../assets";
 import { Input } from "../components/index.js";
+import { useSelector, useDispatch } from "react-redux";
+import { toast } from "react-toastify";
+import axios from "axios";
+import { updateAccountDetails, updateAvatar } from "../features/userSlice.js";
 
 function Profile({ isOpen, setIsOpen }) {
+  const initalUserData = useSelector((state) => state.user.userData);
+  const [userData, setUserData] = useState(initalUserData);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const [isDetailsEditable, setIsDetailsEditable] = useState(false);
-  const onImageChange = (e) => {};
-  const onDetailsSave = (e) => {
-    setIsDetailsEditable(false);
+  const dispatch = useDispatch();
+
+  const onImageChange = async (e) => {
+    const file = e.target.files[0];
+    const formData = new FormData();
+    formData.set("avatar", file);
+    setIsAvatarUploading(true);
+
+    try {
+      const response = await axios.patch(
+        `${URL}/api/v1/users/update-avatar`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      dispatch(updateAvatar(response.data.data));
+      setUserData((prev) => ({ ...prev, avatar: response.data.data.avatar }));
+      toast.success("Avatar updated successfully");
+    } catch (error) {
+      toast.error(error?.response?.data?.message);
+    } finally {
+      setIsAvatarUploading(false);
+    }
   };
+
+  const onDetalsChange = (e) => {
+    setUserData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const validateData = (formData) => {
+    if (
+      !formData.fullname ||
+      !formData.username ||
+      !formData.email ||
+      !formData.bio
+    ) {
+      return "All fields are required";
+    } else if (formData.fullname.length < 3) {
+      return "Full name should be at least 3 characters long";
+    } else if (formData.username.length < 3) {
+      return "Username should be at least 3 chatacters long";
+    } else if (formData.bio.length < 3) {
+      return "About should be at least 10 characters long";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      return "Email address is not valid";
+    } else if (formData.bio.length > 200) {
+      return "About should be at most 200 characters long";
+    }
+  };
+
+  const onDetailsSave = () => {
+    const errorData = validateData(userData);
+    if (errorData) {
+      toast.error(errorData);
+      return;
+    }
+
+    axios
+      .patch(`${URL}/api/v1/users/update-account-details`, userData, {
+        withCredentials: true,
+      })
+      .then((res) => {
+        dispatch(updateAccountDetails(res.data.data));
+        toast.success(res.data.message);
+      })
+      .catch((err) => {
+        toast.error(err.response.data.message);
+      })
+      .finally(() => setIsDetailsEditable(false));
+  };
+
   return isOpen ? (
     <div className="bg-white z-50 border rounded-md border-black w-[400px] flex flex-col items-center p-2 absolute right-2 mt-1">
       <i
@@ -17,20 +94,24 @@ function Profile({ isOpen, setIsOpen }) {
       ></i>
       <h1 className="font-bold mt-2 mb-2 text-xl">Profile</h1>
       <p className="mb-4">Your Profile Information</p>
-      <div className="w-28 rounded-full border border-black p-1 relative">
-        <img src={Avatar} alt="Avatar" className="" />
+      <div className="w-28 h-28 rounded-full border border-black p-1 relative">
+        <div className="h-full rounded-full overflow-hidden">
+          <img
+            src={userData.avatar ? userData.avatar : Avatar}
+            className=" w-full h-full object-cover object-center"
+          />
+        </div>
         <label
           htmlFor="avatar-upload"
           className={`absolute right-0 bottom-3 hover:scale-105 cursor-pointer ${
             isAvatarUploading ? "animate-pulse pointer-events-none" : ""
           }`}
         >
-          <i class="fa-solid fa-camera text-xl"></i>
+          <i class="fa-solid fa-camera text-xl text-black"></i>
           <input
             type="file"
             id="avatar-upload"
             className="hidden"
-            accept="image/*"
             disabled={isAvatarUploading}
             onChange={onImageChange}
           />
@@ -63,11 +144,11 @@ function Profile({ isOpen, setIsOpen }) {
           </h2>
           <Input
             type="text"
-            value="Pratik Tele"
+            value={userData.fullname}
             placeholder="Full Name"
             name="fullname"
             id="fullname"
-            error=""
+            onChange={onDetalsChange}
             disabled={!isDetailsEditable}
             className={`w-full h-8 border-b outline-none bg-gray-50 ${
               isDetailsEditable ? "border-gray-400" : "border-gray-50"
@@ -80,11 +161,11 @@ function Profile({ isOpen, setIsOpen }) {
           </h2>
           <Input
             type="text"
-            value="Pratik123"
+            value={userData.username}
             placeholder="username"
             name="username"
             id="username"
-            error=""
+            onChange={onDetalsChange}
             disabled={!isDetailsEditable}
             className={`w-full h-8 border-b bg-gray-50 outline-none ${
               isDetailsEditable ? "border-gray-400" : "border-gray-50"
@@ -97,11 +178,11 @@ function Profile({ isOpen, setIsOpen }) {
           </h2>
           <Input
             type="text"
-            value="pratiktele4@gmail.com"
+            value={userData.email}
             placeholder="Email Address"
             name="email"
             id="email"
-            error=""
+            onChange={onDetalsChange}
             disabled={!isDetailsEditable}
             className={`w-full h-8 border-b bg-gray-50 outline-none ${
               isDetailsEditable ? "border-gray-400" : "border-gray-50"
@@ -111,16 +192,16 @@ function Profile({ isOpen, setIsOpen }) {
         <div>
           <h2 className="text-md text-gray-600 text-sm mb-1 flex items-center">
             <img src={InfoImage} className="w-4 h-4 inline-block mr-2" />
-            Bio
+            About
           </h2>
           <textarea
             type="text"
-            value="Pratik123"
-            placeholder="Bio"
+            value={userData.bio ? userData.bio : ""}
+            placeholder="Write something about you"
             name="bio"
             id="bio"
             maxLength={200}
-            error=""
+            onChange={onDetalsChange}
             disabled={!isDetailsEditable}
             className={`w-full h-8 border-b bg-gray-50 outline-none ${
               isDetailsEditable
