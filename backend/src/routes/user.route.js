@@ -28,7 +28,7 @@ userRouter.route("/reset-password").patch(resetPassword);
 userRouter.route("/").get(verifyAccessToken, searchUsers);
 userRouter
   .route("/update-avatar")
-  .post(verifyAccessToken, upload.single("avatar"), uploadAvatar);
+  .patch(verifyAccessToken, upload.single("avatar"), uploadAvatar);
 
 userRouter.route("/change-password").patch(verifyAccessToken, changePassword);
 userRouter

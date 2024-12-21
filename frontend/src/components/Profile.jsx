@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Avatar, InfoImage, URL } from "../assets";
-import { Input } from "../components/index.js";
+import { Input, SideContainer } from "../components/index.js";
 import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import axios from "axios";
@@ -86,133 +86,129 @@ function Profile({ isOpen, setIsOpen }) {
       .finally(() => setIsDetailsEditable(false));
   };
 
-  return isOpen ? (
-    <div className="bg-white z-50 border rounded-md border-black w-[400px] flex flex-col items-center p-2 absolute right-2 mt-1">
-      <i
-        class="fa-solid fa-xmark absolute right-2 text-xl top-0 cursor-pointer"
-        onClick={() => setIsOpen(false)}
-      ></i>
-      <h1 className="font-bold mt-2 mb-2 text-xl">Profile</h1>
-      <p className="mb-4">Your Profile Information</p>
-      <div className="w-28 h-28 rounded-full border border-black p-1 relative">
-        <div className="h-full rounded-full overflow-hidden">
+  return (
+    <SideContainer isOpen={isOpen}>
+      <div className={`flex flex-col items-center`}>
+        <h1 className="font-bold mt-2 mb-2 text-xl">Profile</h1>
+        <p className="mb-4">Your Profile Information</p>
+        <div className="w-28 h-28 rounded-full relative">
           <img
             src={userData.avatar ? userData.avatar : Avatar}
-            className=" w-full h-full object-cover object-center"
+            className=" w-full h-full rounded-full border object-cover"
           />
+          <label
+            htmlFor="avatar-upload"
+            className={`absolute right-0 bottom-3 bg-slate-100 w-7 h-7 flex justify-center items-center rounded-full hover:scale-105 cursor-pointer ${
+              isAvatarUploading ? "animate-pulse pointer-events-none" : ""
+            }`}
+          >
+            <i class="fa-solid fa-camera text-md text-black "></i>
+            <input
+              type="file"
+              id="avatar-upload"
+              className="hidden"
+              disabled={isAvatarUploading}
+              onChange={onImageChange}
+            />
+          </label>
         </div>
-        <label
-          htmlFor="avatar-upload"
-          className={`absolute right-0 bottom-3 hover:scale-105 cursor-pointer ${
-            isAvatarUploading ? "animate-pulse pointer-events-none" : ""
-          }`}
-        >
-          <i class="fa-solid fa-camera text-xl text-black"></i>
-          <input
-            type="file"
-            id="avatar-upload"
-            className="hidden"
-            disabled={isAvatarUploading}
-            onChange={onImageChange}
-          />
-        </label>
-      </div>
-      <div className="h-6">
-        {isAvatarUploading ? (
-          <p className="mt-2">
-            <i class="fa-solid fa-spinner fa-spin-pulse mr-1"></i>
-            Uploading...
-          </p>
-        ) : null}
-      </div>
-      <div className="w-full p-3 mt-4 bg-gray-50 rounded-md relative">
-        {isDetailsEditable ? (
-          <i
-            class="fa-regular fa-floppy-disk text-xl relative left-[340px] cursor-pointer"
-            onClick={onDetailsSave}
-          ></i>
-        ) : (
-          <i
-            class="fa-regular fa-pen-to-square relative left-[340px] text-xl cursor-pointer"
-            onClick={() => setIsDetailsEditable(true)}
-          ></i>
-        )}
+        <div className="h-6">
+          {isAvatarUploading ? (
+            <p className="mt-2">
+              <i class="fa-solid fa-spinner fa-spin-pulse mr-1"></i>
+              Uploading...
+            </p>
+          ) : null}
+        </div>
+        <div className="w-full p-3 mt-5 rounded-md relative">
+          {isDetailsEditable ? (
+            <i
+              class="fa-regular fa-floppy-disk text-xl relative left-[320px] cursor-pointer"
+              onClick={onDetailsSave}
+            ></i>
+          ) : (
+            <i
+              class="fa-regular fa-pen-to-square relative left-[320px] text-xl cursor-pointer"
+              onClick={() => setIsDetailsEditable(true)}
+            ></i>
+          )}
 
-        <div>
-          <h2 className="text-md text-gray-600 text-sm mb-1">
-            <i class="fa-regular fa-user text-sm mr-2"></i>Full Name
-          </h2>
-          <Input
-            type="text"
-            value={userData.fullname}
-            placeholder="Full Name"
-            name="fullname"
-            id="fullname"
-            onChange={onDetalsChange}
-            disabled={!isDetailsEditable}
-            className={`w-full h-8 border-b outline-none bg-gray-50 ${
-              isDetailsEditable ? "border-gray-400" : "border-gray-50"
-            }`}
-          />
-        </div>
-        <div>
-          <h2 className="text-md text-gray-600 text-sm mb-1">
-            <i class="fa-regular fa-user text-sm mr-2"></i>Username
-          </h2>
-          <Input
-            type="text"
-            value={userData.username}
-            placeholder="username"
-            name="username"
-            id="username"
-            onChange={onDetalsChange}
-            disabled={!isDetailsEditable}
-            className={`w-full h-8 border-b bg-gray-50 outline-none ${
-              isDetailsEditable ? "border-gray-400" : "border-gray-50"
-            }`}
-          />
-        </div>
-        <div>
-          <h2 className="text-md text-gray-600 text-sm mb-1">
-            <i class="fa-regular fa-envelope mr-2"></i>Email Address
-          </h2>
-          <Input
-            type="text"
-            value={userData.email}
-            placeholder="Email Address"
-            name="email"
-            id="email"
-            onChange={onDetalsChange}
-            disabled={!isDetailsEditable}
-            className={`w-full h-8 border-b bg-gray-50 outline-none ${
-              isDetailsEditable ? "border-gray-400" : "border-gray-50"
-            }`}
-          />
-        </div>
-        <div>
-          <h2 className="text-md text-gray-600 text-sm mb-1 flex items-center">
-            <img src={InfoImage} className="w-4 h-4 inline-block mr-2" />
-            About
-          </h2>
-          <textarea
-            type="text"
-            value={userData.bio ? userData.bio : ""}
-            placeholder="Write something about you"
-            name="bio"
-            id="bio"
-            maxLength={200}
-            onChange={onDetalsChange}
-            disabled={!isDetailsEditable}
-            className={`w-full h-8 border-b bg-gray-50 outline-none ${
-              isDetailsEditable
-                ? "border-gray-400 min-h-7"
-                : " resize-none border-gray-50"
-            }`}
-          />
+          <div>
+            <h2 className="text-md text-gray-600 text-sm mb-1">
+              <i class="fa-regular fa-user text-sm mr-2"></i>Full Name
+            </h2>
+            <Input
+              type="text"
+              value={userData.fullname}
+              placeholder="Full Name"
+              name="fullname"
+              id="fullname"
+              onChange={onDetalsChange}
+              disabled={!isDetailsEditable}
+              className={`w-full h-9 border-b bg-white outline-none ${
+                isDetailsEditable ? "border-gray-400" : "border-gray-50"
+              }`}
+            />
+          </div>
+          <div>
+            <h2 className="text-md text-gray-600 text-sm mb-1">
+              <i class="fa-regular fa-user text-sm mr-2"></i>Username
+            </h2>
+            <Input
+              type="text"
+              value={userData.username}
+              placeholder="username"
+              name="username"
+              id="username"
+              onChange={onDetalsChange}
+              disabled={!isDetailsEditable}
+              className={`w-full h-9 border-b bg-white outline-none ${
+                isDetailsEditable ? "border-gray-400" : "border-gray-50"
+              }`}
+            />
+          </div>
+          <div>
+            <h2 className="text-md text-gray-600 text-sm mb-1">
+              <i class="fa-regular fa-envelope mr-2"></i>Email Address
+            </h2>
+            <Input
+              type="text"
+              value={userData.email}
+              placeholder="Email Address"
+              name="email"
+              id="email"
+              onChange={onDetalsChange}
+              disabled={!isDetailsEditable}
+              className={`w-full h-9 border-b bg-white outline-none ${
+                isDetailsEditable ? "border-gray-400" : "border-gray-50"
+              }`}
+            />
+          </div>
+          <div>
+            <h2 className="text-md text-gray-600 text-sm mb-1 flex items-center">
+              <img src={InfoImage} className="w-4 h-4 inline-block mr-2" />
+              About
+            </h2>
+            <textarea
+              type="text"
+              value={userData.bio ? userData.bio : ""}
+              placeholder="Write something about you"
+              name="bio"
+              id="bio"
+              maxLength={200}
+              onChange={onDetalsChange}
+              disabled={!isDetailsEditable}
+              className={`w-full h-9 border-b bg-white outline-none ${
+                isDetailsEditable
+                  ? "border-gray-400 min-h-7"
+                  : " resize-none border-gray-50"
+              }`}
+            />
+          </div>
         </div>
       </div>
-    </div>
-  ) : null;
+    </SideContainer>
+  );
 }
 
 export default Profile;
