@@ -83,7 +83,7 @@ function Navigation({ setIsProfileOpen, setIsChatsOpen, setIsGroupsOpen }) {
                 className="relative cursor-pointer group"
               >
                 <i class={`fa-solid ${item.icon} text-xl`}></i>
-                <span className=" invisible opacity-0 absolute left-10 rounded-md font-semibold bg-black text-white px-3 py-1 group-hover:visible group-hover:opacity-100 transition-all ease-in-out duration-300">
+                <span className=" invisible opacity-0 absolute left-10 rounded-md text-sm bg-black text-white px-3 py-1 group-hover:visible group-hover:opacity-100 transition-all ease-in-out duration-300">
                   <div className="w-4 h-3 bg-black rotate-45 absolute -left-1 top-[11px] rounded-r-md"></div>
                   {item.title}
                 </span>
@@ -102,7 +102,7 @@ function Navigation({ setIsProfileOpen, setIsChatsOpen, setIsGroupsOpen }) {
               className="relative cursor-pointer group"
             >
               <i class={`fa-solid ${item.icon} text-xl`}></i>
-              <span className=" invisible opacity-0 absolute left-9 rounded-md font-semibold bg-black text-white px-3 py-1 group-hover:visible group-hover:opacity-100 transition-all ease-in-out duration-300">
+              <span className=" invisible opacity-0 absolute left-9 rounded-md text-sm bg-black text-white px-3 py-1 group-hover:visible group-hover:opacity-100 transition-all ease-in-out duration-300">
                 <div className="w-4 h-3 bg-black rotate-45 absolute -left-1 top-[11px] rounded-r-md"></div>
                 {item.title}
               </span>

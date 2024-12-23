@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, InfoImage, URL } from "../assets";
 import { Input, SideContainer } from "../components/index.js";
 import { useSelector, useDispatch } from "react-redux";
@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { updateAccountDetails, updateAvatar } from "../features/userSlice.js";
 
-function Profile({ isOpen, setIsOpen }) {
+function Profile({ isOpen }) {
   const initalUserData = useSelector((state) => state.user.userData);
   const [userData, setUserData] = useState(initalUserData);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
@@ -93,8 +93,8 @@ function Profile({ isOpen, setIsOpen }) {
         <p className="mb-4">Your Profile Information</p>
         <div className="w-28 h-28 rounded-full relative">
           <img
-            src={userData.avatar ? userData.avatar : Avatar}
-            className=" w-full h-full rounded-full border object-cover"
+            src={userData?.avatar ? userData.avatar : Avatar}
+            className=" w-full h-full rounded-full object-cover"
           />
           <label
             htmlFor="avatar-upload"
@@ -139,7 +139,7 @@ function Profile({ isOpen, setIsOpen }) {
             </h2>
             <Input
               type="text"
-              value={userData.fullname}
+              value={userData?.fullname}
               placeholder="Full Name"
               name="fullname"
               id="fullname"
@@ -156,7 +156,7 @@ function Profile({ isOpen, setIsOpen }) {
             </h2>
             <Input
               type="text"
-              value={userData.username}
+              value={userData?.username}
               placeholder="username"
               name="username"
               id="username"
@@ -173,7 +173,7 @@ function Profile({ isOpen, setIsOpen }) {
             </h2>
             <Input
               type="text"
-              value={userData.email}
+              value={userData?.email}
               placeholder="Email Address"
               name="email"
               id="email"
@@ -191,7 +191,7 @@ function Profile({ isOpen, setIsOpen }) {
             </h2>
             <textarea
               type="text"
-              value={userData.bio ? userData.bio : ""}
+              value={userData?.bio ? userData.bio : ""}
               placeholder="Write something about you"
               name="bio"
               id="bio"

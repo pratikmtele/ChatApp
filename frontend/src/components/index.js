@@ -8,6 +8,8 @@ import SearchBar from "./SearchBar";
 import SideContainer from "./SideContainer";
 import ChatItem from "./ChatItem";
 import Groups from "./Groups";
+import Main from "./Main";
+import Avatar from "./Avatar";
 
 export {
   Input,
@@ -20,4 +22,6 @@ export {
   Chats,
   ChatItem,
   Groups,
+  Main,
+  Avatar,
 };

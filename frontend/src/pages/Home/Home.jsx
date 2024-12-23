@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Chats, Groups, Navigation, Profile } from "../../components/index.js";
+import {
+  Chats,
+  Groups,
+  Navigation,
+  Profile,
+  Main,
+  SideContainer,
+} from "../../components/index.js";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
@@ -11,14 +18,15 @@ function Home() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user.userData);
 
+  console.log(user);
   useEffect(() => {
-    if (!user) {
+    if (user === null) {
       navigate("/login");
     }
   }, []);
 
   return (
-    <div className="flex">
+    <div className="flex bg-slate-50">
       <Navigation
         setIsProfileOpen={setIsProfileOpen}
         setIsChatsOpen={setIsChatsOpen}
@@ -27,6 +35,7 @@ function Home() {
       <Profile isOpen={isProfileOpen} setIsOpen={setIsProfileOpen} />
       <Chats isChatsOpen={isChatsOpen} />
       <Groups isGroupOpen={isGroupsOpen} />
+      <Main />
     </div>
   );
 }

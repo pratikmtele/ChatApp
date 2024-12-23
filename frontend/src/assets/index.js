@@ -6,6 +6,7 @@ import ResetPasswordImage from "./reset-password.svg";
 import OTPImage from "./enter-otp.svg";
 import Avatar from "./avatar.png";
 import InfoImage from "./info.png";
+import SendMessageImage from "./send-message.png";
 
 export {
   TextingImage,
@@ -16,6 +17,7 @@ export {
   OTPImage,
   Avatar,
   InfoImage,
+  SendMessageImage,
 };
 
 export const URL = "http://localhost:8000";
