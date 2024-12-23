@@ -36,8 +36,9 @@ function Main() {
             } transition-all ease-in-out duration-300`}
           >
             <input
-              className="border border-gray-200 h-10 w-full pl-2"
+              className="border border-gray-200 h-10 w-full pl-2 outline-none"
               placeholder="Search"
+              name="search"
             />
           </div>
           {/* Search bar ends here */}
