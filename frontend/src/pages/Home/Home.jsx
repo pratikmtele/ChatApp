@@ -5,10 +5,10 @@ import {
   Navigation,
   Profile,
   Main,
-  SideContainer,
 } from "../../components/index.js";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import axios from "axios";
+import { URL } from "../../assets/index.js";
 
 function Home() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -16,14 +16,22 @@ function Home() {
   const [isGroupsOpen, setIsGroupsOpen] = useState(false);
 
   const navigate = useNavigate();
-  const user = useSelector((state) => state.user.userData);
 
-  console.log(user);
   useEffect(() => {
-    if (user === null) {
-      navigate("/login");
-    }
-  }, []);
+    const fetchData = async () => {
+      try {
+        await axios.post(
+          `${URL}/api/v1/protected`,
+          {},
+          { withCredentials: true }
+        );
+      } catch (error) {
+        navigate("/login");
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
 
   return (
     <div className="flex bg-slate-50">

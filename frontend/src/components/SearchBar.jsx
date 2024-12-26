@@ -1,15 +1,17 @@
 import React from "react";
 import { Input } from "./index.js";
 
-function SearchBar() {
+function SearchBar({ className, iconClassName }) {
   return (
     <div className="relative">
       <Input
-        className="border border-gray-300 h-10 pl-10 mt-5 rounded-md outline-none hover:border-black transition-all ease-in-out duration-200"
+        className={`border border-gray-300 h-10 pl-10 rounded-md outline-none hover:border-black transition-all ease-in-out duration-200 ${className}`}
         type="text"
         placeholder="Search messages or users"
       />
-      <i class="fa-solid fa-magnifying-glass absolute top-[32px] left-3"></i>
+      <i
+        class={`fa-solid fa-magnifying-glass absolute left-3 ${iconClassName}`}
+      ></i>
     </div>
   );
 }
