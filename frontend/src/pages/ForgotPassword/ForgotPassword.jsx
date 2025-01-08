@@ -77,9 +77,11 @@ function ForgotPassword() {
           <h1 className="text-2xl font-bold mt-8 lg:mt-5">
             Forget your password?
           </h1>
-          <p className="mt-4 text-sm">Please enter your registered email ID.</p>
+          <p className="mt-4 text-sm">
+            Please enter your registered email address.
+          </p>
           <p className="mt-1 text-sm">
-            We will send a verification code to your registered email ID.
+            We will send a verification code to your registered email address.
           </p>
           <form className="mt-7" onSubmit={onSubmit}>
             <Input

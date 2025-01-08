@@ -15,6 +15,8 @@ import SenderMessage from "./SenderMessage";
 import ReceiverMessage from "./ReceiverMessage";
 import ChatContainer from "./ChatContainer";
 import NoChatSelected from "./NoChatSelected";
+import Modal from "./Modal";
+import CreateChat from "./CreateChat";
 
 export {
   Input,
@@ -34,4 +36,6 @@ export {
   SenderMessage,
   ReceiverMessage,
   ChatContainer,
+  Modal,
+  CreateChat,
 };

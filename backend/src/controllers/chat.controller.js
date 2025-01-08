@@ -64,7 +64,11 @@ const fetchChats = asyncHandler(async (req, res) => {
     await Chat.find({
       users: { $elemMatch: { $eq: req.user._id } },
     })
-      .populate("users", "-password")
+      .populate({
+        path: "users",
+        select: "-password",
+        match: { _id: { $ne: req.user._id } },
+      })
       .populate("groupAdmin", "-password")
       .populate("latestMessage")
       .sort({ updatedAt: -1 })
@@ -73,6 +77,7 @@ const fetchChats = asyncHandler(async (req, res) => {
           path: "latestMessage.sender",
           select: "fullname avatar email",
         });
+
         return res
           .status(200)
           .json(

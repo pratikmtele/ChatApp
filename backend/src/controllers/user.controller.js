@@ -262,7 +262,7 @@ const sendOTP = asyncHandler(async (req, res) => {
   if (!user) {
     return res
       .status(400)
-      .json(new ApiResponse(400, {}, "Email Id doesn't exist in the database"));
+      .json(new ApiResponse(400, {}, "Please enter registered email address"));
   }
 
   try {

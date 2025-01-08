@@ -7,14 +7,9 @@ const messageSchema = new Schema(
       ref: "User",
       required: true,
     },
-    recepient: {
+    chatId: {
       type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
-    messageType: {
-      type: String,
-      enum: ["text", "file"],
+      ref: "Chat",
       required: true,
     },
     content: {

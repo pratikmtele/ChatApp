@@ -15,7 +15,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { store, persistor } from "./store/store.js";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { SocketProvider } from "./context/SocketContext.js";
+import { SocketProvider } from "./context/SocketContext.jsx";
+import { ChatProvider } from "./context/ChatContext.jsx";
 
 const routes = createBrowserRouter([
   {
@@ -54,11 +55,13 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <Provider store={store}>
       <SocketProvider>
-        <PersistGate loading={null} persistor={persistor}>
-          <RouterProvider router={routes}>
-            <App />
-          </RouterProvider>
-        </PersistGate>
+        <ChatProvider>
+          <PersistGate loading={null} persistor={persistor}>
+            <RouterProvider router={routes}>
+              <App />
+            </RouterProvider>
+          </PersistGate>
+        </ChatProvider>
       </SocketProvider>
     </Provider>
   </StrictMode>

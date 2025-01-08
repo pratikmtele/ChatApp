@@ -7,11 +7,14 @@ import {
   SearchBar,
 } from "./index.js";
 import { SendMessageImage } from "../assets/index.js";
+import { useChat } from "../context/ChatContext.jsx";
 
 function ChatContainer() {
   const [isSearchbarOpen, setIsSearchbarOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const messageInput = useRef(null);
+
+  const { selectedChat, _ } = useChat();
 
   useEffect(() => {
     if (messageInput?.current) {
@@ -23,8 +26,8 @@ function ChatContainer() {
     <>
       <div className="border-b border-l-0 border-r-0 border-t-0 border-gray-300 h-20 flex justify-between pr-2 bg-white bg-opacity-50 backdrop-blur-md">
         <div className="flex gap-3 items-center ml-4">
-          <Avatar />
-          <h1 className="font-semibold">Pratik Tele</h1>
+          <Avatar avatar={selectedChat.users[0].avatar} />
+          <h1 className="font-semibold">{selectedChat.users[0].fullname}</h1>
         </div>
         <div className="flex gap-8 items-center mr-5 relative drop-shadow-md">
           <i
@@ -41,7 +44,11 @@ function ChatContainer() {
               isSearchbarOpen ? " opacity-100" : "opacity-0"
             } transition-all ease-in-out duration-300`}
           >
-            <SearchBar className="mt-3" iconClassName="top-[24px]" />
+            <SearchBar
+              className="mt-3"
+              iconClassName="top-[24px]"
+              placeholder="Search messages or users"
+            />
           </div>
           {/* Search bar ends here */}
 
@@ -71,6 +78,7 @@ function ChatContainer() {
         <SenderMessage />
       </div>
 
+      {/* Footer */}
       <div className="h-20 px-4 border-l-0 border-r-0 border-b-0 border-t border-gray-300 flex items-center">
         <form className="mt-3">
           <Input

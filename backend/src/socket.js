@@ -24,14 +24,12 @@ const setupSocketServer = (server) => {
   };
 
   io.on("connection", (socket) => {
-    const userId = socket.handshake.query.userId;
+    console.log("User connected and socket id is ", socket.id);
 
-    if (!userId) throw new ApiError(404, "user id is not found");
-
-    userSocketMap.set(userId, socket.id);
-    console.log(`User Connected: ${userId} with socket id: ${socket.id}`);
-
-    socket.on("disconnect", disconnectUser(socket));
+    socket.on("setup", (userData) => {
+      socket.join(userData._id);
+      socket.emit("Connected");
+    });
   });
 };
 

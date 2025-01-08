@@ -17,19 +17,17 @@ function Home() {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await axios.post(
-          `${URL}/api/v1/protected`,
-          {},
-          { withCredentials: true }
-        );
-      } catch (error) {
-        navigate("/login");
-      }
-    };
+  const fetchData = async () => {
+    try {
+      await axios.get(`${URL}/api/v1/users/current-user`, {
+        withCredentials: true,
+      });
+    } catch (error) {
+      navigate("/login");
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, [navigate]);
 
