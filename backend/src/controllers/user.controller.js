@@ -248,6 +248,26 @@ const searchUsers = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, users, "Users searched successfully"));
 });
 
+const fetchAllUsers = asyncHandler(async (req, res) => {
+  try {
+    const users = await User.find({ _id: { $ne: req.user._id } }).select(
+      "-password"
+    );
+
+    if (users.length > 0) {
+      return res
+        .status(200)
+        .json(new ApiResponse(200, users, "Fetched all users successfully"));
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, [], "Fetched all users successfully"));
+  } catch (error) {
+    throw new ApiError(400, error.message);
+  }
+});
+
 const sendOTP = asyncHandler(async (req, res) => {
   const { email } = req.body;
 
@@ -403,4 +423,5 @@ export {
   sendOTP,
   verifyOTP,
   resetPassword,
+  fetchAllUsers,
 };

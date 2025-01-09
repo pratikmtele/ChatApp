@@ -17,8 +17,6 @@ function Chats({ isChatsOpen }) {
   const [searchedChats, setSearchChats] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log(isOpen);
-
   const { _, setSelectedChat } = useChat();
 
   const fetchAllchats = async () => {
@@ -85,7 +83,9 @@ function Chats({ isChatsOpen }) {
         </div>
 
         {/* action menu */}
-        {isMenuOpen ? <ActionMenu setIsOpen={setIsOpen} /> : null}
+        {isMenuOpen ? (
+          <ActionMenu setIsOpen={setIsOpen} setIsMenuOpen={setIsMenuOpen} />
+        ) : null}
       </div>
 
       {/* Chat Modal */}

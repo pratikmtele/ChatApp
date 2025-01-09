@@ -1,6 +1,7 @@
 import express from "express";
 import {
   changePassword,
+  fetchAllUsers,
   getCurrentUser,
   login,
   logout,
@@ -25,7 +26,8 @@ userRouter.route("/verify-otp").post(verifyOTP);
 userRouter.route("/reset-password").patch(resetPassword);
 
 // secured routes
-userRouter.route("/").get(verifyAccessToken, searchUsers);
+userRouter.route("/").get(verifyAccessToken, fetchAllUsers);
+userRouter.route("/search-users").get(verifyAccessToken, searchUsers);
 userRouter
   .route("/update-avatar")
   .patch(verifyAccessToken, upload.single("avatar"), uploadAvatar);

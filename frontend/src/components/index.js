@@ -17,6 +17,7 @@ import ChatContainer from "./ChatContainer";
 import NoChatSelected from "./NoChatSelected";
 import Modal from "./Modal";
 import CreateChat from "./CreateChat";
+import UserItem from "./UserItem";
 
 export {
   Input,
@@ -38,4 +39,5 @@ export {
   ChatContainer,
   Modal,
   CreateChat,
+  UserItem,
 };
