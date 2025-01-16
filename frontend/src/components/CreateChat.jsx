@@ -2,10 +2,19 @@ import React, { useEffect, useState } from "react";
 import { Modal, SearchBar, UserItem } from "./index.js";
 import axios from "axios";
 import { URL } from "../assets/index.js";
+import { useDispatch, useSelector } from "react-redux";
+import { addChat } from "../features/chatsSlice.js";
+import { useChat } from "../context/ChatContext.jsx";
 
-function CreateChat({ isOpen, setIsOpen }) {
+function CreateChat({ isOpen, setIsOpen, setAllChats }) {
   const [users, setUsers] = useState([]);
   const [searchUser, setSearchUser] = useState("");
+
+  const chats = useSelector((state) => state.chats.chats);
+
+  const dispatch = useDispatch();
+
+  const { _, setSelectedChat } = useChat();
 
   const fetchAllUsers = async () => {
     try {
@@ -49,6 +58,26 @@ function CreateChat({ isOpen, setIsOpen }) {
     setSearchUser(e.target.value);
   };
 
+  const onChatCreate = async (userId) => {
+    try {
+      const response = await axios.post(
+        `${URL}/api/v1/chats`,
+        { userId: userId },
+        { withCredentials: true }
+      );
+
+      if (response.data.statusCode === 200) {
+        dispatch(addChat(response.data.data));
+        setAllChats((prevChats) => [response.data.data, ...prevChats]);
+      }
+
+      setSelectedChat(response.data.data);
+      setIsOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Modal
       isOpen={isOpen}
@@ -75,10 +104,14 @@ function CreateChat({ isOpen, setIsOpen }) {
         />
         <div
           id="users-container"
-          className="max-h-80 min-h-fit border border-slate-300 mt-2 rounded-md flex flex-col gap-2 p-2 will-change-auto overflow-scroll hide-scrollbar"
+          className="max-h-80 min-h-[400px] border border-slate-300 mt-2 rounded-md flex flex-col gap-2 p-2 will-change-auto overflow-scroll hide-scrollbar"
         >
           {users.map((user) => (
-            <UserItem user={user} />
+            <UserItem
+              user={user}
+              key={user._id}
+              onClick={() => onChatCreate(user._id)}
+            />
           ))}
         </div>
       </div>

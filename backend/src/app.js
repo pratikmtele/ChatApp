@@ -6,7 +6,7 @@ const app = express();
 
 // express middlewares
 app.use(express.json());
-
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(
@@ -18,8 +18,6 @@ app.use(
 );
 
 app.use(express.static("public"));
-
-app.use(cookieParser());
 
 // importing routers here
 import userRouter from "./routes/user.route.js";

@@ -7,6 +7,7 @@ import {
   renameGroup,
   addToGroup,
   removeFromGroup,
+  removeChat,
 } from "../controllers/chat.controller.js";
 
 const chatRouter = express();
@@ -15,6 +16,8 @@ chatRouter
   .route("/")
   .post(verifyAccessToken, accessChats)
   .get(verifyAccessToken, fetchChats);
+
+chatRouter.route("/:chatId").delete(verifyAccessToken, removeChat);
 
 chatRouter.route("/group").post(verifyAccessToken, createGroupChat);
 chatRouter.route("/rename").patch(verifyAccessToken, renameGroup);

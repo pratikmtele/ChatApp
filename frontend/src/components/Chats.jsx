@@ -9,15 +9,21 @@ import {
 import axios from "axios";
 import { URL } from "../assets/index.js";
 import { useChat } from "../context/ChatContext.jsx";
+import { useSelector, useDispatch } from "react-redux";
+import { setChats } from "../features/chatsSlice.js";
 
 function Chats({ isChatsOpen }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [chats, setChats] = useState([]);
   const [search, setSearch] = useState("");
   const [searchedChats, setSearchChats] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const { _, setSelectedChat } = useChat();
+  const dispatch = useDispatch();
+  const chats = useSelector((state) => state.chats.chats);
+
+  const [allChats, setAllChats] = useState(chats);
+
+  const { selectedChat, setSelectedChat } = useChat();
 
   const fetchAllchats = async () => {
     try {
@@ -25,7 +31,8 @@ function Chats({ isChatsOpen }) {
         withCredentials: true,
       });
 
-      setChats(response.data.data);
+      dispatch(setChats(response.data.data));
+      setAllChats(response.data.data);
     } catch (error) {
       console.log(error);
     }
@@ -33,20 +40,20 @@ function Chats({ isChatsOpen }) {
 
   useEffect(() => {
     fetchAllchats();
-  }, []);
+  }, [selectedChat]);
 
   const onChange = (e) => {
     setSearch(e.target.value);
   };
 
   useEffect(() => {
-    const filteredChats = chats.filter((chat) =>
+    const filteredChats = allChats.filter((chat) =>
       chat.users.some((user) =>
         user.fullname.toLowerCase().includes(search.toLowerCase())
       )
     );
     setSearchChats(filteredChats);
-  }, [search, chats]);
+  }, [search, allChats, selectedChat]);
 
   return (
     <SideContainer isOpen={isChatsOpen}>
@@ -67,7 +74,7 @@ function Chats({ isChatsOpen }) {
                 key={chat._id}
                 avatar={chat.users[0].avatar}
                 fullname={chat.users[0].fullname}
-                latestMessage={chat.latestMessage.content}
+                latestMessage={chat?.latestMessage?.content}
               />
             </div>
           ))}
@@ -89,7 +96,11 @@ function Chats({ isChatsOpen }) {
       </div>
 
       {/* Chat Modal */}
-      <CreateChat isOpen={isOpen} setIsOpen={setIsOpen} />
+      <CreateChat
+        isOpen={isOpen}
+        setIsOpen={setIsOpen}
+        setAllChats={setAllChats}
+      />
     </SideContainer>
   );
 }

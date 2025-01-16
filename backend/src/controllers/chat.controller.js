@@ -7,9 +7,9 @@ import User from "../models/user.model.js";
 const accessChats = asyncHandler(async (req, res) => {
   const { userId } = req.body;
 
-  if (!userId) throw new ApiError(400, "UserId param not sent with request");
+  if (!userId) throw new ApiError(400, "UserId is not sent with request");
 
-  var isChat = await Chat.find({
+  var isChat = await Chat.findOne({
     isGroupChat: false,
     $and: [
       {
@@ -18,7 +18,11 @@ const accessChats = asyncHandler(async (req, res) => {
       },
     ],
   })
-    .populate("users", "-password")
+    .populate({
+      path: "users",
+      select: "-password",
+      match: { _id: { $ne: req.user._id } },
+    })
     .populate("latestMessage");
 
   isChat = await User.populate(isChat, {
@@ -26,13 +30,19 @@ const accessChats = asyncHandler(async (req, res) => {
     select: "fullname email avatar",
   });
 
-  if (isChat.length > 0) {
+  if (isChat) {
     return res
-      .status(200)
-      .json(new ApiResponse(200, isChat, "Chat send successfully."));
+      .status(201)
+      .json(
+        new ApiResponse(
+          201,
+          isChat,
+          "You are already connected with this user."
+        )
+      );
   } else {
     let chatData = {
-      chatName: "sender",
+      chatName: "Personal",
       isGroupChat: false,
       users: [req.user._id, userId],
     };
@@ -40,14 +50,15 @@ const accessChats = asyncHandler(async (req, res) => {
     try {
       const createdChat = await Chat.create(chatData);
 
-      const fullChat = await Chat.findOne({ _id: createdChat._id }).populate(
-        "users",
-        "-password"
-      );
+      const fullChat = await Chat.findOne({ _id: createdChat._id }).populate({
+        path: "users",
+        select: "-password",
+        match: { _id: { $ne: req.user._id } },
+      });
 
       return res
         .status(200)
-        .json(new ApiResponse(200, fullChat, "Chat send successfully."));
+        .json(new ApiResponse(200, fullChat, "Chat created successfully."));
     } catch (errors) {
       console.log(errors);
       throw new ApiError(
@@ -92,6 +103,26 @@ const fetchChats = asyncHandler(async (req, res) => {
       "Something went wrong while fetching all the chats"
     );
   }
+});
+
+const removeChat = asyncHandler(async (req, res) => {
+  const { chatId } = req.params;
+
+  if (!chatId)
+    return res
+      .status(404)
+      .json(new ApiResponse(404, null, "Chat Id is not sent with the reponse"));
+
+  const deletedChat = await Chat.findByIdAndDelete(chatId, { new: true });
+
+  if (!deletedChat)
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Chat is not deleted"));
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, deletedChat, "Chat deleted successfully"));
 });
 
 const createGroupChat = asyncHandler(async (req, res) => {
@@ -196,6 +227,7 @@ const removeFromGroup = asyncHandler(async (req, res) => {
 export {
   accessChats,
   fetchChats,
+  removeChat,
   createGroupChat,
   renameGroup,
   addToGroup,

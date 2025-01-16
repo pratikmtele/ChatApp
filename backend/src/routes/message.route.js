@@ -6,9 +6,7 @@ const messageRouter = express();
 
 // secured routes
 
-messageRouter
-  .route("/")
-  .post(verifyAccessToken, sendMessage)
-  .get(verifyAccessToken, allMessages);
+messageRouter.route("/").post(verifyAccessToken, sendMessage);
+messageRouter.route("/:chatId").get(verifyAccessToken, allMessages);
 
 export default messageRouter;

@@ -6,21 +6,112 @@ import {
   ReceiverMessage,
   SearchBar,
 } from "./index.js";
-import { SendMessageImage } from "../assets/index.js";
+import { SendMessageImage, URL } from "../assets/index.js";
 import { useChat } from "../context/ChatContext.jsx";
+import { useDispatch, useSelector } from "react-redux";
+import { setMessages, addMessage } from "../features/messageSlice.js";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { removeChat } from "../features/chatsSlice.js";
 
 function ChatContainer() {
   const [isSearchbarOpen, setIsSearchbarOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const messageInput = useRef(null);
+  const messageRef = useRef(null);
+  const dispatch = useDispatch();
+  const [messageInput, setMessageInput] = useState(null);
 
-  const { selectedChat, _ } = useChat();
+  const currentUser = useSelector((state) => state.user.userData);
+
+  const { selectedChat, setSelectedChat } = useChat();
+  const allMessages = useSelector((state) => state.messages.messages);
+  console.log(selectedChat);
+
+  const [chatMessages, setChatMessages] = useState([]);
+
+  const fetchAllMessages = async () => {
+    try {
+      const response = await axios.get(
+        `${URL}/api/v1/messages/${selectedChat._id}`,
+        { withCredentials: true }
+      );
+
+      dispatch(setMessages(response.data.data));
+
+      setChatMessages(response.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-    if (messageInput?.current) {
-      messageInput.current.focus();
+    setChatMessages(allMessages);
+  }, [allMessages]);
+
+  useEffect(() => {
+    fetchAllMessages();
+  }, [dispatch, selectedChat]);
+
+  useEffect(() => {
+    if (messageRef?.current) {
+      messageRef.current.focus();
     }
   }, []);
+
+  const onMessageChange = (e) => {
+    setMessageInput(e.target.value);
+  };
+
+  const onMessageSend = async (e) => {
+    e.preventDefault();
+
+    if (!messageInput) {
+      toast.error("please enter message");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${URL}/api/v1/messages/`,
+        { chatId: selectedChat._id, content: messageInput },
+        { withCredentials: true }
+      );
+
+      dispatch(addMessage(response.data.data));
+
+      setChatMessages((prevChatMessages) => [
+        ...prevChatMessages,
+        response.data.data,
+      ]);
+      setSelectedChat((prev) => ({
+        ...prev,
+        latestMessage: response.data.data,
+      }));
+      setMessageInput("");
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // chat delete function
+  const onChatDelete = async () => {
+    try {
+      const response = await axios.delete(
+        `${URL}/api/v1/chats/${selectedChat._id}`,
+        { withCredentials: true }
+      );
+
+      if (response.data.statusCode < 400) {
+        console.log(response.data.data._id);
+
+        dispatch(removeChat(response.data.data._id));
+        setSelectedChat(null);
+        toast.success("Chat deleted successfully");
+      }
+    } catch (error) {
+      console.log("Chat deletion error: ", error);
+    }
+  };
 
   return (
     <>
@@ -67,26 +158,45 @@ function ChatContainer() {
               isMenuOpen ? "opacity-100" : "opacity-0"
             } transition-all ease-in-out duration-200`}
           >
-            <p className="cursor-pointer">Delete</p>
+            <p className="cursor-pointer" onClick={onChatDelete}>
+              Delete
+            </p>
           </div>
         </div>
       </div>
 
       {/* message container */}
       <div className="h-[582px] w-full will-change-scroll p-3 overflow-auto">
-        <ReceiverMessage />
-        <SenderMessage />
+        {chatMessages.map((message) => {
+          return message.sender._id === currentUser._id ? (
+            <div className="flex flex-col -mb-4">
+              <SenderMessage
+                avatar={message.sender.avatar}
+                content={message.content}
+                date={message.createdAt}
+              />
+            </div>
+          ) : (
+            <ReceiverMessage
+              avatar={message.sender.avatar}
+              content={message.content}
+              date={message.createdAt}
+            />
+          );
+        })}
       </div>
 
       {/* Footer */}
       <div className="h-20 px-4 border-l-0 border-r-0 border-b-0 border-t border-gray-300 flex items-center">
-        <form className="mt-3">
+        <form className="mt-3" onSubmit={onMessageSend}>
           <Input
             type="text"
             placeholder="Enter message..."
             id="message"
             name="message"
-            ref={messageInput}
+            ref={messageRef}
+            value={messageInput}
+            onChange={onMessageChange}
             className="p-2 w-[850px] bg-slate-50 border border-gray-300 ml-3 rounded-md pl-2 outline-none"
           />
         </form>
@@ -107,7 +217,10 @@ function ChatContainer() {
             </span>
           </label>
         </div>
-        <button className="bg-blue-600 w-9 p-1.5 ml-5 rounded-md">
+        <button
+          className="bg-blue-600 w-9 p-1.5 ml-5 rounded-md"
+          onClick={onMessageSend}
+        >
           <img src={SendMessageImage} alt="Send" />
         </button>
       </div>
