@@ -25,7 +25,6 @@ function ChatContainer() {
 
   const { selectedChat, setSelectedChat } = useChat();
   const allMessages = useSelector((state) => state.messages.messages);
-  console.log(selectedChat);
 
   const [chatMessages, setChatMessages] = useState([]);
 

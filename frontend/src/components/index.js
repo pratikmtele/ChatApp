@@ -10,7 +10,6 @@ import ChatItem from "./ChatItem";
 import Groups from "./Groups";
 import Main from "./Main";
 import Avatar from "./Avatar";
-import ActionMenu from "./ActionMenu";
 import SenderMessage from "./SenderMessage";
 import ReceiverMessage from "./ReceiverMessage";
 import ChatContainer from "./ChatContainer";
@@ -18,6 +17,7 @@ import NoChatSelected from "./NoChatSelected";
 import Modal from "./Modal";
 import CreateChat from "./CreateChat";
 import UserItem from "./UserItem";
+import CreateGroup from "./CreateGroup";
 
 export {
   Input,
@@ -33,11 +33,11 @@ export {
   Groups,
   Main,
   Avatar,
-  ActionMenu,
   SenderMessage,
   ReceiverMessage,
   ChatContainer,
   Modal,
   CreateChat,
   UserItem,
+  CreateGroup,
 };

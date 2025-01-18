@@ -29,6 +29,10 @@ function CreateChat({ isOpen, setIsOpen, setAllChats }) {
   };
 
   useEffect(() => {
+    setAllChats(chats);
+  }, [chats]);
+
+  useEffect(() => {
     fetchAllUsers();
   }, []);
 
@@ -110,6 +114,7 @@ function CreateChat({ isOpen, setIsOpen, setAllChats }) {
             <UserItem
               user={user}
               key={user._id}
+              isSelected={false}
               onClick={() => onChatCreate(user._id)}
             />
           ))}

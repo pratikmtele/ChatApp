@@ -1,11 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-  ChatItem,
-  SearchBar,
-  SideContainer,
-  ActionMenu,
-  CreateChat,
-} from "./index.js";
+import { ChatItem, SearchBar, SideContainer, CreateChat } from "./index.js";
 import axios from "axios";
 import { URL } from "../assets/index.js";
 import { useChat } from "../context/ChatContext.jsx";
@@ -13,7 +7,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { setChats } from "../features/chatsSlice.js";
 
 function Chats({ isChatsOpen }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [searchedChats, setSearchChats] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -57,7 +50,7 @@ function Chats({ isChatsOpen }) {
 
   return (
     <SideContainer isOpen={isChatsOpen}>
-      <div onClick={() => setIsMenuOpen(false)}>
+      <div>
         <h1 className="font-bold text-xl mt-5">Chats</h1>
         <SearchBar
           className="mt-5"
@@ -83,16 +76,11 @@ function Chats({ isChatsOpen }) {
           className="bg-blue-600 drop-shadow-md fixed flex items-center justify-center text-white w-12 h-12 rounded-full bottom-10 left-[310px] cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
-            setIsMenuOpen((prev) => !prev);
+            setIsOpen((prev) => !prev);
           }}
         >
           <i class="fa-solid fa-plus text-xl"></i>
         </div>
-
-        {/* action menu */}
-        {isMenuOpen ? (
-          <ActionMenu setIsOpen={setIsOpen} setIsMenuOpen={setIsMenuOpen} />
-        ) : null}
       </div>
 
       {/* Chat Modal */}
