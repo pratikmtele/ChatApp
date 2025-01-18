@@ -3,6 +3,10 @@ import ApiError from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import Chat from "../models/chat.model.js";
 import User from "../models/user.model.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 
 const accessChats = asyncHandler(async (req, res) => {
   const { userId } = req.body;
@@ -74,6 +78,7 @@ const fetchChats = asyncHandler(async (req, res) => {
   try {
     await Chat.find({
       users: { $elemMatch: { $eq: req.user._id } },
+      isGroupChat: false,
     })
       .populate({
         path: "users",
@@ -125,11 +130,35 @@ const removeChat = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, deletedChat, "Chat deleted successfully"));
 });
 
+// group chat controllers
 const createGroupChat = asyncHandler(async (req, res) => {
-  if (!req.body.users || !req.body.name)
-    throw new ApiError(400, "All fields are required");
+  const { groupName } = req.body;
 
-  const users = JSON.parse(req.body.users);
+  if (!groupName) throw new ApiError(400, "Group name is required");
+
+  if (!req.body.users) throw new ApiError(400, "Users are not selected");
+
+  // Split the users string into an array if it's a string
+  const users =
+    typeof req.body.users === "string"
+      ? req.body.users.split(",")
+      : req.body.users;
+
+  if (!users.includes(req.user._id)) {
+    users.push(req.user._id);
+  }
+
+  const profileLocalPath = req.file?.path;
+
+  if (!profileLocalPath) throw new ApiError(400, "profile file is missing");
+
+  const profile = await uploadOnCloudinary(
+    profileLocalPath,
+    "ChatApp/chatProfile"
+  );
+
+  if (!profile.url)
+    throw new ApiError(401, "Avatar is not uplaoded on the cloudinary.");
 
   if (users.length < 2)
     throw new ApiError(
@@ -139,14 +168,19 @@ const createGroupChat = asyncHandler(async (req, res) => {
 
   try {
     const chatGroup = await Chat.create({
-      chatName: req.body.name,
+      chatName: groupName,
       users: users,
+      groupProfile: profile.url,
       isGroupChat: true,
       groupAdmin: req.user._id,
     });
 
     const fullGroupChat = await Chat.findOne({ _id: chatGroup._id })
-      .populate("users", "-password")
+      .populate({
+        path: "users",
+        select: "-password",
+        match: { _id: { $ne: req.user._id } },
+      })
       .populate("groupAdmin", "-password");
 
     return res
@@ -156,7 +190,50 @@ const createGroupChat = asyncHandler(async (req, res) => {
       );
   } catch (error) {
     console.log(error);
+
+    if (profile.url) {
+      await deleteFromCloudinary(avatar.public_id);
+    }
+
     throw new ApiError(400, "Something went wrong while creating group chat");
+  }
+});
+
+const fetchGroups = asyncHandler(async (req, res) => {
+  try {
+    await Chat.find({
+      users: { $elemMatch: { $eq: req.user._id } },
+      isGroupChat: true,
+    })
+      .populate({
+        path: "users",
+        select: "-password",
+        match: { _id: { $ne: req.user._id } },
+      })
+      .populate("groupAdmin", "-password")
+      .populate("latestMessage")
+      .sort({ updatedAt: -1 })
+      .then(async (results) => {
+        results = await User.populate(results, {
+          path: "latestMessage.sender",
+          select: "fullname avatar email",
+        });
+
+        return res
+          .status(200)
+          .json(
+            new ApiResponse(
+              200,
+              results,
+              "All group chats fetched successfully"
+            )
+          );
+      });
+  } catch (error) {
+    throw new ApiError(
+      400,
+      "Something went wrong while fetching all the group chats"
+    );
   }
 });
 
@@ -229,6 +306,7 @@ export {
   fetchChats,
   removeChat,
   createGroupChat,
+  fetchGroups,
   renameGroup,
   addToGroup,
   removeFromGroup,

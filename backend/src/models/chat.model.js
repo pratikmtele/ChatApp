@@ -10,6 +10,12 @@ const chatSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    groupProfile: {
+      type: String,
+      required: function () {
+        return this.isGroupChat;
+      },
+    },
     users: [
       {
         type: Schema.Types.ObjectId,

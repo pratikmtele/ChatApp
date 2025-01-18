@@ -8,7 +8,9 @@ import {
   addToGroup,
   removeFromGroup,
   removeChat,
+  fetchGroups,
 } from "../controllers/chat.controller.js";
+import { upload } from "../middlewares/multer.middleware.js";
 
 const chatRouter = express();
 
@@ -19,7 +21,10 @@ chatRouter
 
 chatRouter.route("/:chatId").delete(verifyAccessToken, removeChat);
 
-chatRouter.route("/group").post(verifyAccessToken, createGroupChat);
+chatRouter
+  .route("/group")
+  .post(verifyAccessToken, upload.single("profile"), createGroupChat);
+chatRouter.route("/group-chats").get(verifyAccessToken, fetchGroups);
 chatRouter.route("/rename").patch(verifyAccessToken, renameGroup);
 chatRouter.route("/groupadd").patch(verifyAccessToken, addToGroup);
 chatRouter.route("/groupremove").patch(verifyAccessToken, removeFromGroup);

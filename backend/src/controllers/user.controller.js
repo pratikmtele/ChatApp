@@ -119,6 +119,7 @@ const login = asyncHandler(async (req, res) => {
     const options = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // cookie will expire in 7 days
     };
 
     return res
