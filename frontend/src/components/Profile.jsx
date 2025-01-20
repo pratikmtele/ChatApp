@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Avatar, InfoImage, URL } from "../assets";
 import { Input, SideContainer } from "../components/index.js";
 import { useSelector, useDispatch } from "react-redux";

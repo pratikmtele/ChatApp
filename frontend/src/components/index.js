@@ -18,6 +18,7 @@ import Modal from "./Modal";
 import CreateChat from "./CreateChat";
 import UserItem from "./UserItem";
 import CreateGroup from "./CreateGroup";
+import OtherProfile from "./OthersProfile";
 
 export {
   Input,
@@ -40,4 +41,5 @@ export {
   CreateChat,
   UserItem,
   CreateGroup,
+  OtherProfile,
 };

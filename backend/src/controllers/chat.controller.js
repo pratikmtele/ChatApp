@@ -16,10 +16,8 @@ const accessChats = asyncHandler(async (req, res) => {
   var isChat = await Chat.findOne({
     isGroupChat: false,
     $and: [
-      {
-        users: { $elemMatch: { $eq: req.user._id } },
-        users: { $elemMatch: { $eq: userId } },
-      },
+      { users: { $elemMatch: { $eq: req.user._id } } },
+      { users: { $elemMatch: { $eq: userId } } },
     ],
   })
     .populate({
@@ -150,12 +148,10 @@ const createGroupChat = asyncHandler(async (req, res) => {
 
   const profileLocalPath = req.file?.path;
 
-  if (!profileLocalPath) throw new ApiError(400, "profile file is missing");
-
-  const profile = await uploadOnCloudinary(
-    profileLocalPath,
-    "ChatApp/chatProfile"
-  );
+  let profile = null;
+  if (profileLocalPath) {
+    profile = await uploadOnCloudinary(profileLocalPath, "ChatApp/chatProfile");
+  }
 
   if (!profile.url)
     throw new ApiError(401, "Avatar is not uplaoded on the cloudinary.");

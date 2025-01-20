@@ -70,6 +70,8 @@ function CreateChat({ isOpen, setIsOpen, setAllChats }) {
         { withCredentials: true }
       );
 
+      console.log(response.data);
+
       if (response.data.statusCode === 200) {
         dispatch(addChat(response.data.data));
         setAllChats((prevChats) => [response.data.data, ...prevChats]);

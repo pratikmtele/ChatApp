@@ -125,7 +125,7 @@ const CreateGroup = ({ isOpen, setIsOpen, setGroupChats }) => {
 
       if (response.data.statusCode < 400) {
         dispatch(addGroupChat(response.data.data));
-        setGroupChats((prev) => [...prev, response.data.data]);
+        setGroupChats((prev) => [response.data.data, ...prev]);
         setSelectedChat(response.data.data);
         toast.success("Group created successfully");
       } else {

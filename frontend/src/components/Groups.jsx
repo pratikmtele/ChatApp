@@ -4,12 +4,14 @@ import axios from "axios";
 import { setGroupChat } from "../features/chatsSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 import { URL } from "../assets/index.js";
+import { useChat } from "../context/ChatContext.jsx";
 
 function Groups({ isGroupOpen }) {
   const reduxGroupChats = useSelector((state) => state.chats.groupChats);
   const [groupChats, setGroupChats] = useState([]);
   const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
+  const { selectedChat, setSelectedChat } = useChat();
 
   useEffect(() => {
     setGroupChats(reduxGroupChats);
@@ -32,7 +34,7 @@ function Groups({ isGroupOpen }) {
 
   useEffect(() => {
     fetchAllGroupChats();
-  }, []);
+  }, [selectedChat]);
 
   return (
     <SideContainer isOpen={isGroupOpen}>
@@ -46,11 +48,13 @@ function Groups({ isGroupOpen }) {
       <div className="will-change-scroll max-h-[556px] overflow-y-auto hide-scrollbar">
         {groupChats.map((groupChat) => {
           return (
-            <ChatItem
-              avatar={groupChat.groupProfile}
-              latestMessage={groupChat?.latestMessage?.content}
-              fullname={groupChat.chatName}
-            />
+            <div onClick={() => setSelectedChat(groupChat)}>
+              <ChatItem
+                avatar={groupChat.groupProfile}
+                latestMessage={groupChat?.latestMessage?.content}
+                fullname={groupChat.chatName}
+              />
+            </div>
           );
         })}
         <div
