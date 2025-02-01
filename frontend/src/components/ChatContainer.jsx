@@ -6,10 +6,18 @@ import {
   ReceiverMessage,
   SearchBar,
 } from "./index.js";
-import { SendMessageImage, URL } from "../assets/index.js";
+import {
+  SendMessageImage,
+  URL as APIURL,
+  LoadingImage,
+} from "../assets/index.js";
 import { useChat } from "../context/ChatContext.jsx";
 import { useDispatch, useSelector } from "react-redux";
-import { setMessages, addMessage } from "../features/messageSlice.js";
+import {
+  setMessages,
+  addMessage,
+  removeMessage,
+} from "../features/messageSlice.js";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { removeChat, removeGroupChat } from "../features/chatsSlice.js";
@@ -20,6 +28,9 @@ function ChatContainer({ setIsOtherProfileOpen }) {
   const messageRef = useRef(null);
   const dispatch = useDispatch();
   const [messageInput, setMessageInput] = useState(null);
+  const [fileInput, setFileInput] = useState(null);
+  const [pending, setPending] = useState(false);
+  const [previewFile, setPreviewFile] = useState(null);
 
   const currentUser = useSelector((state) => state.user.userData);
 
@@ -31,7 +42,7 @@ function ChatContainer({ setIsOtherProfileOpen }) {
   const fetchAllMessages = async () => {
     try {
       const response = await axios.get(
-        `${URL}/api/v1/messages/${selectedChat._id}`,
+        `${APIURL}/api/v1/messages/${selectedChat._id}`,
         { withCredentials: true }
       );
 
@@ -61,34 +72,62 @@ function ChatContainer({ setIsOtherProfileOpen }) {
     setMessageInput(e.target.value);
   };
 
+  const onFileChange = (e) => {
+    const file = e.target.files[0];
+    setFileInput(file);
+
+    // generate preview file
+    const preview = URL.createObjectURL(file);
+    setPreviewFile(preview);
+  };
+
   const onMessageSend = async (e) => {
     e.preventDefault();
 
     if (!messageInput) {
-      toast.error("please enter message");
-      return;
+      if (!fileInput) {
+        toast.error("There is nothing to sent");
+        return;
+      }
     }
 
+    const formData = new FormData();
+    formData.set("chatId", selectedChat._id);
+    messageInput && formData.set("content", messageInput);
+    formData.set("image", fileInput);
+
     try {
+      setPending(true);
       const response = await axios.post(
-        `${URL}/api/v1/messages/`,
-        { chatId: selectedChat._id, content: messageInput },
-        { withCredentials: true }
+        `${APIURL}/api/v1/messages/`,
+        formData,
+        {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
-      dispatch(addMessage(response.data.data));
+      if (response.data.statusCode < 400) {
+        dispatch(addMessage(response.data.data));
 
-      setChatMessages((prevChatMessages) => [
-        ...prevChatMessages,
-        response.data.data,
-      ]);
-      setSelectedChat((prev) => ({
-        ...prev,
-        latestMessage: response.data.data,
-      }));
-      setMessageInput("");
+        setChatMessages((prevChatMessages) => [
+          ...prevChatMessages,
+          response.data.data,
+        ]);
+        setSelectedChat((prev) => ({
+          ...prev,
+          latestMessage: response.data.data,
+        }));
+        setMessageInput("");
+        setFileInput(null);
+        setPreviewFile(null);
+      }
     } catch (error) {
       console.log(error);
+    } finally {
+      setPending(false);
     }
   };
 
@@ -96,7 +135,7 @@ function ChatContainer({ setIsOtherProfileOpen }) {
   const onChatDelete = async () => {
     try {
       const response = await axios.delete(
-        `${URL}/api/v1/chats/${selectedChat._id}`,
+        `${APIURL}/api/v1/chats/${selectedChat._id}`,
         { withCredentials: true }
       );
 
@@ -113,6 +152,30 @@ function ChatContainer({ setIsOtherProfileOpen }) {
     } catch (error) {
       console.log("Chat deletion error: ", error);
     }
+  };
+
+  const onMessageDelete = async (messageId) => {
+    try {
+      if (!messageId) {
+        toast.error("Something went wrong");
+        return;
+      }
+
+      const response = await axios.delete(
+        `${APIURL}/api/v1/messages/delete/${messageId}`,
+        { withCredentials: true }
+      );
+
+      if (response.data.statusCode < 400) {
+        console.log(response.data);
+
+        dispatch(removeMessage(messageId));
+        setChatMessages((prev) => {
+          return prev.filter((message) => message._id !== messageId);
+        });
+        toast.success("Message deleted");
+      }
+    } catch (error) {}
   };
 
   return (
@@ -142,17 +205,15 @@ function ChatContainer({ setIsOtherProfileOpen }) {
           ></i>
 
           {/* Search bar  */}
-          <div
-            className={`absolute right-28 px-2  bg-white w-[300px] -bottom-12 ${
-              isSearchbarOpen ? " opacity-100" : "opacity-0"
-            } transition-all ease-in-out duration-300`}
-          >
-            <SearchBar
-              className="mt-3"
-              iconClassName="top-[24px]"
-              placeholder="Search messages or users"
-            />
-          </div>
+          {isSearchbarOpen && (
+            <div className="absolute right-28 px-2 bg-white w-[300px] -bottom-12 transition-all ease-in-out duration-300">
+              <SearchBar
+                className="mt-3"
+                iconClassName="top-[24px]"
+                placeholder="Search messages"
+              />
+            </div>
+          )}
           {/* Search bar ends here */}
 
           <i
@@ -171,15 +232,13 @@ function ChatContainer({ setIsOtherProfileOpen }) {
           ></i>
 
           {/* Menu is here */}
-          <div
-            className={` absolute -right-1 -bottom-5 bg-white flex flex-col items-center justify-center w-24 h-9 ${
-              isMenuOpen ? "opacity-100" : "opacity-0"
-            } transition-all ease-in-out duration-200`}
-          >
-            <p className="cursor-pointer" onClick={onChatDelete}>
-              Delete
-            </p>
-          </div>
+          {isMenuOpen && (
+            <div className="absolute -right-1 -bottom-5 bg-white flex flex-col items-center justify-center w-24 h-9 transition-all ease-in-out duration-200">
+              <p className="cursor-pointer" onClick={onChatDelete}>
+                Delete
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -192,6 +251,8 @@ function ChatContainer({ setIsOtherProfileOpen }) {
                 avatar={message.sender.avatar}
                 content={message.content}
                 date={message.createdAt}
+                fileUrl={message?.fileUrl}
+                onClick={() => onMessageDelete(message._id)}
               />
             </div>
           ) : (
@@ -199,13 +260,28 @@ function ChatContainer({ setIsOtherProfileOpen }) {
               avatar={message.sender.avatar}
               content={message.content}
               date={message.createdAt}
+              fileUrl={message?.fileUrl}
             />
           );
         })}
       </div>
 
       {/* message input */}
-      <div className="h-20 px-4 border-l-0 border-r-0 border-b-0 border-t w-full border-gray-300 grid grid-cols-[50fr_1fr_1fr_1fr] gap-2 items-center">
+      <div className="h-20 px-4 border-l-0 border-r-0 relative border-b-0 border-t w-full border-gray-300 grid grid-cols-[50fr_1fr_1fr_1fr] gap-2 items-center">
+        {/* image preview */}
+        {previewFile && (
+          <div className="absolute -top-60 left-2 border border-slate-300 w-fit h-fit z-50">
+            <i
+              className="fa-solid fa-xmark w-full text-right mt-1 pr-1 text-xl cursor-pointer "
+              onClick={() => setPreviewFile(null)}
+            ></i>
+            <img
+              src={previewFile}
+              className="object-center object-cover w-[300px] h-[200px]"
+            />
+          </div>
+        )}
+
         <form className="mt-3" onSubmit={onMessageSend}>
           <Input
             type="text"
@@ -214,6 +290,7 @@ function ChatContainer({ setIsOtherProfileOpen }) {
             name="message"
             ref={messageRef}
             value={messageInput}
+            disabled={pending}
             onChange={onMessageChange}
             className="p-2 w-full bg-slate-50 border border-gray-300 ml-3 rounded-md pl-2 outline-none"
           />
@@ -228,7 +305,13 @@ function ChatContainer({ setIsOtherProfileOpen }) {
           </div>
           <label htmlFor="image" className="relative group">
             <i class="fa-solid fa-image text-blue-800 cursor-pointer"></i>
-            <input type="file" id="image" name="image" className=" hidden" />
+            <input
+              type="file"
+              id="image"
+              name="image"
+              className=" hidden"
+              onChange={onFileChange}
+            />
             <span className=" invisible opacity-0 absolute rounded-md bottom-10 -right-[24px] text-sm bg-black text-white px-3 py-2 group-hover:visible group-hover:opacity-100 transition-all ease-in-out duration-300">
               <div className="w-3 h-3 bg-black  absolute left-[27px] -bottom-[5px] rotate-45 rounded-l-sm"></div>
               Image
@@ -239,7 +322,11 @@ function ChatContainer({ setIsOtherProfileOpen }) {
           className="bg-blue-600 w-9 p-1.5 ml-5 rounded-md"
           onClick={onMessageSend}
         >
-          <img src={SendMessageImage} alt="Send" />
+          {!pending ? (
+            <img src={SendMessageImage} alt="Send" />
+          ) : (
+            <img src={LoadingImage} />
+          )}
         </button>
       </div>
     </div>

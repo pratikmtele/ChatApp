@@ -1,43 +1,24 @@
-import React, { useState } from "react";
-import { Avatar, InfoImage, URL } from "../assets";
+import React, { useEffect, useState } from "react";
+import { Avatar, InfoImage } from "../assets";
 import { Input, SideContainer } from "../components/index.js";
-import { useSelector, useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import axios from "axios";
-import { updateAccountDetails, updateAvatar } from "../features/userSlice.js";
+import useAuthStore from "../store/useAuthStore.jsx";
 
 function Profile({ isOpen }) {
-  const initalUserData = useSelector((state) => state.user.userData);
-  const [userData, setUserData] = useState(initalUserData);
-  const [isAvatarUploading, setIsAvatarUploading] = useState(false);
+  const { user, updateAvatar, updateAccountDetails, loading } = useAuthStore();
+  const [userData, setUserData] = useState();
   const [isDetailsEditable, setIsDetailsEditable] = useState(false);
-  const dispatch = useDispatch();
+
+  useEffect(() => {
+    setUserData(user);
+  }, [user]);
 
   const onImageChange = async (e) => {
     const file = e.target.files[0];
     const formData = new FormData();
     formData.set("avatar", file);
-    setIsAvatarUploading(true);
-
-    try {
-      const response = await axios.patch(
-        `${URL}/api/v1/users/update-avatar`,
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      dispatch(updateAvatar(response.data.data));
-      setUserData((prev) => ({ ...prev, avatar: response.data.data.avatar }));
-      toast.success("Avatar updated successfully");
-    } catch (error) {
-      toast.error(error?.response?.data?.message);
-    } finally {
-      setIsAvatarUploading(false);
-    }
+    updateAvatar(formData);
+    setUserData((prev) => ({ ...prev, avatar: user.avatar }));
   };
 
   const onDetalsChange = (e) => {
@@ -71,19 +52,8 @@ function Profile({ isOpen }) {
       toast.error(errorData);
       return;
     }
-
-    axios
-      .patch(`${URL}/api/v1/users/update-account-details`, userData, {
-        withCredentials: true,
-      })
-      .then((res) => {
-        dispatch(updateAccountDetails(res.data.data));
-        toast.success(res.data.message);
-      })
-      .catch((err) => {
-        toast.error(err.response.data.message);
-      })
-      .finally(() => setIsDetailsEditable(false));
+    updateAccountDetails(userData);
+    setIsDetailsEditable(false);
   };
 
   return (
@@ -99,7 +69,7 @@ function Profile({ isOpen }) {
           <label
             htmlFor="avatar-upload"
             className={`absolute right-0 bottom-3 bg-slate-100 w-7 h-7 flex justify-center items-center rounded-full hover:scale-105 cursor-pointer ${
-              isAvatarUploading ? "animate-pulse pointer-events-none" : ""
+              loading ? "animate-pulse pointer-events-none" : ""
             }`}
           >
             <i class="fa-solid fa-camera text-md text-black "></i>
@@ -107,13 +77,13 @@ function Profile({ isOpen }) {
               type="file"
               id="avatar-upload"
               className="hidden"
-              disabled={isAvatarUploading}
+              disabled={loading}
               onChange={onImageChange}
             />
           </label>
         </div>
         <div className="h-6">
-          {isAvatarUploading ? (
+          {loading ? (
             <p className="mt-2">
               <i class="fa-solid fa-spinner fa-spin-pulse mr-1"></i>
               Uploading...

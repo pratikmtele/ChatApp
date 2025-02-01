@@ -2,22 +2,32 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import Message from "../models/message.model.js";
 import Chat from "../models/chat.model.js";
+import ApiError from "../utils/ApiError.js";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 
 const sendMessage = asyncHandler(async (req, res) => {
-  const { content, chatId } = req.body;
+  const { chatId, content } = req.body;
 
-  if (!chatId) {
-    return res.status(404).json(ApiResponse(404, {}, "Chat ID is not found"));
-  }
+  const imageLocalPath = req.file?.path;
 
-  if (!content) {
-    return res.status(400).json(ApiResponse(400, {}, "Content is required"));
+  if (!chatId) throw new ApiError(404, "Chat Id is required");
+
+  let image = null;
+  if (imageLocalPath) {
+    image = await uploadOnCloudinary(imageLocalPath, "ChatApp/images");
+
+    if (!image.url)
+      throw new ApiError(401, "Avatar is not uplaoded on the cloudinary.");
   }
 
   const message = {
     sender: req.user._id,
     chatId,
-    content,
+    content: content ? content : null,
+    fileUrl: image?.url ? image?.url : null,
   };
 
   try {
@@ -46,6 +56,10 @@ const sendMessage = asyncHandler(async (req, res) => {
       .status(200)
       .json(new ApiResponse(200, createdMessage, "Message sent"));
   } catch (error) {
+    console.log(error);
+    if (image.url) {
+      await deleteFromCloudinary(image.public_id);
+    }
     return res.status(400).json(new ApiResponse(400, {}, error.message));
   }
 });
@@ -66,4 +80,23 @@ const allMessages = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, allMessages, "Messages fetched successfully"));
 });
 
-export { sendMessage, allMessages };
+const deleteMessage = asyncHandler(async (req, res) => {
+  const { messageId } = req.params;
+
+  if (!messageId)
+    throw new ApiError(404, "Message Id is not sent with the request");
+
+  const deletedMessage = await Message.findByIdAndDelete(
+    { _id: messageId },
+    { new: true }
+  );
+
+  if (!deletedMessage)
+    throw new ApiError(400, "Message is not deletion failed");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, deletedMessage, "Message deleted successfully"));
+});
+
+export { sendMessage, allMessages, deleteMessage };

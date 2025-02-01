@@ -76,14 +76,18 @@ const OthersProfile = ({ isOtherProfileOpen, setIsOtherProfileOpen }) => {
           ) : (
             <div className="mt-5 pr-5">
               <h1 className="font-semibold">Members</h1>
-              <div className="border border-slate-300 flex flex-col gap-2 rounded-md mt-3 h-[340px] overflow-scroll will-change-auto hide-scrollbar">
+              <div className="border border-slate-300 flex flex-col gap-2 rounded-md mt-3 h-[300px] overflow-auto will-change-auto hide-scrollbar">
                 <ChatItem
                   avatar={selectedChat.groupAdmin.avatar}
                   fullname={selectedChat.groupAdmin.fullname}
                   latestMessage={"Admin"}
                 />
                 {selectedChat.users.map((user) => (
-                  <ChatItem avatar={user.avatar} fullname={user.fullname} />
+                  <ChatItem
+                    avatar={user.avatar}
+                    fullname={user.fullname}
+                    key={user._id}
+                  />
                 ))}
               </div>
             </div>

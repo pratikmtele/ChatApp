@@ -2,23 +2,16 @@ import React, { useState } from "react";
 import { TextingImage, Logo } from "../../assets/index.js";
 import { Input, Button, CheckBox } from "../../components/index.js";
 import { Link } from "react-router-dom";
-import { URL } from "../../assets/index.js";
-import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import axios from "axios";
-import { useDispatch } from "react-redux";
-import { login } from "../../features/userSlice.js";
+import useAuthStore from "../../store/useAuthStore.jsx";
 
 function Login() {
-  const [pending, setPending] = useState(false);
+  const { loading, login } = useAuthStore();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [userData, setUserData] = useState({
     username: "",
     password: "",
   });
   const [errors, setErrors] = useState("");
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   const onChange = (e) => {
     setUserData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -74,32 +67,13 @@ function Login() {
 
   const onLogin = async (e) => {
     e.preventDefault();
-    setPending(true);
-
     const errorData = validateData(userData);
     if (Object.keys(errorData).length !== 0) {
       setPending(false);
       return;
     }
 
-    axios
-      .post(`${URL}/api/v1/users/login`, userData, {
-        withCredentials: true,
-      })
-      .then((response) => {
-        console.log(response.data.data);
-
-        dispatch(login(response.data.data));
-        toast.success(response.data.message);
-        setPending(false);
-        setUserData({ username: "", password: "" });
-        navigate("/");
-      })
-      .catch((error) => {
-        toast.error(error.response?.data?.message || "An error occurred");
-        setPending(false);
-      })
-      .finally(() => setPending(false));
+    login(userData);
   };
 
   return (
@@ -159,7 +133,7 @@ function Login() {
             <Button
               type="submit"
               label="LOGIN"
-              pending={pending}
+              pending={loading}
               className="w-full h-12 lg:h-10 mt-5 text-white gradient-color hover:opacity-80 transition-all ease-in-out duration-300 font-semibold tracking-wide rounded-md"
             />
             <p className="mt-7 text-center">

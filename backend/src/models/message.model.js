@@ -14,16 +14,10 @@ const messageSchema = new Schema(
     },
     content: {
       type: String,
-      required: function () {
-        return this.messageType === "text";
-      },
       trim: true,
     },
     fileUrl: {
       type: String,
-      required: function () {
-        return this.messageType === "file";
-      },
     },
   },
   {

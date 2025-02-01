@@ -1,5 +1,4 @@
 import { Server as SocketIOServer } from "socket.io";
-import ApiError from "./utils/ApiError.js";
 
 const setupSocketServer = (server) => {
   const io = new SocketIOServer(server, {

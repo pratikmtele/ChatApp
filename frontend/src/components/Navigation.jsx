@@ -1,28 +1,12 @@
 import React from "react";
-import { Logo, URL } from "../assets/index.js";
-import axios from "axios";
-import { toast } from "react-toastify";
-import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { logout } from "../features/userSlice.js";
+import { Logo } from "../assets/index.js";
+import useAuthStore from "../store/useAuthStore.jsx";
 
 function Navigation({ setIsProfileOpen, setIsChatsOpen, setIsGroupsOpen }) {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
+  const { logout } = useAuthStore();
 
   const onLogout = () => {
-    axios
-      .get(`${URL}/api/v1/users/logout`, {
-        withCredentials: true,
-      })
-      .then((response) => {
-        dispatch(logout());
-        toast.success(response.data.message);
-        navigate("/login");
-      })
-      .catch((error) => {
-        toast.error(error.message);
-      });
+    logout();
   };
 
   const navItems = [
