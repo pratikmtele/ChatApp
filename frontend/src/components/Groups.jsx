@@ -1,39 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { SideContainer, SearchBar, ChatItem, CreateGroup } from "./index.js";
-import axios from "axios";
-import { setGroupChat } from "../features/chatsSlice.js";
-import { useDispatch, useSelector } from "react-redux";
-import { URL } from "../assets/index.js";
 import { useChat } from "../context/ChatContext.jsx";
+import useChatStore from "../store/useChatStore.jsx";
 
 function Groups({ isGroupOpen }) {
-  const reduxGroupChats = useSelector((state) => state.chats.groupChats);
-  const [groupChats, setGroupChats] = useState([]);
-  const dispatch = useDispatch();
+  const { setGroupChats: fetchAllGroups, groupChats: chats } = useChatStore();
+  const [groupChats, setGroupChats] = useState(chats);
   const [isOpen, setIsOpen] = useState(false);
   const { selectedChat, setSelectedChat } = useChat();
 
   useEffect(() => {
-    setGroupChats(reduxGroupChats);
-  }, [reduxGroupChats]);
-
-  const fetchAllGroupChats = async () => {
-    try {
-      const response = await axios(`${URL}/api/v1/chats/group-chats`, {
-        withCredentials: true,
-      });
-
-      if (response.data.statusCode < 400) {
-        dispatch(setGroupChat(response.data.data));
-        setGroupChats(response.data.data);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    setGroupChats(chats);
+  }, [chats]);
 
   useEffect(() => {
-    fetchAllGroupChats();
+    fetchAllGroups();
   }, [selectedChat]);
 
   return (

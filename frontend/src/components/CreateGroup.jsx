@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useChat } from "../context/ChatContext.jsx";
 import { Button, Input, Modal, SearchBar, UserItem } from "./index.js";
-import { useDispatch } from "react-redux";
 import axios from "axios";
 import { URL as APIURL } from "../assets/index.js";
 import { Avatar } from "../assets/index.js";
 import { toast } from "react-toastify";
-import { addGroupChat } from "../features/chatsSlice.js";
+import useChatStore from "../store/useChatStore.jsx";
 
-const CreateGroup = ({ isOpen, setIsOpen, setGroupChats }) => {
+const CreateGroup = ({ isOpen, setIsOpen }) => {
+  const { addGroupChat } = useChatStore();
   const [groupName, setGroupName] = useState("");
   const [profile, setProfile] = useState(null);
   const [previewImage, setPreviewImage] = useState(Avatar);
@@ -17,8 +17,6 @@ const CreateGroup = ({ isOpen, setIsOpen, setGroupChats }) => {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
   const [pending, setPending] = useState(false);
-
-  const dispatch = useDispatch();
 
   const { _, setSelectedChat } = useChat();
 
@@ -111,33 +109,12 @@ const CreateGroup = ({ isOpen, setIsOpen, setGroupChats }) => {
     formData.set("users", selectedUsers);
     formData.set("profile", profile);
 
-    try {
-      const response = await axios.post(
-        `${APIURL}/api/v1/chats/group`,
-        formData,
-        {
-          withCredentials: true,
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+    const newGroupChat = await addGroupChat(formData);
+    setSelectedChat(newGroupChat);
 
-      if (response.data.statusCode < 400) {
-        dispatch(addGroupChat(response.data.data));
-        setGroupChats((prev) => [response.data.data, ...prev]);
-        setSelectedChat(response.data.data);
-        toast.success("Group created successfully");
-      } else {
-        toast.error(response.data.message);
-      }
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setIsOpen(false);
-      setIsAvatarUploading(false);
-      setPending(false);
-    }
+    setIsOpen(false);
+    setIsAvatarUploading(false);
+    setPending(false);
   };
 
   return (

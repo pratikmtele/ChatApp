@@ -12,7 +12,7 @@ import {
 const accessChats = asyncHandler(async (req, res) => {
   const { userId } = req.body;
 
-  if (!userId) throw new ApiError(400, "UserId is not sent with request");
+  if (!userId) throw new ApiError(400, "User Id is not sent with request");
 
   var isChat = await Chat.findOne({
     isGroupChat: false,

@@ -1,39 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { ChatItem, SearchBar, SideContainer, CreateChat } from "./index.js";
-import axios from "axios";
-import { URL } from "../assets/index.js";
 import { useChat } from "../context/ChatContext.jsx";
-import { useSelector, useDispatch } from "react-redux";
-import { setChats } from "../features/chatsSlice.js";
+import useChatStore from "../store/useChatStore.jsx";
 
 function Chats({ isChatsOpen }) {
+  const { chats, setChats } = useChatStore();
+  const [allChats, setAllChats] = useState(chats);
   const [search, setSearch] = useState("");
   const [searchedChats, setSearchChats] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  const dispatch = useDispatch();
-  const chats = useSelector((state) => state.chats.chats);
-
-  const [allChats, setAllChats] = useState(chats);
-
   const { selectedChat, setSelectedChat } = useChat();
 
-  const fetchAllchats = async () => {
-    try {
-      const response = await axios.get(`${URL}/api/v1/chats/`, {
-        withCredentials: true,
-      });
-
-      dispatch(setChats(response.data.data));
-      setAllChats(response.data.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  useEffect(() => {
+    setChats();
+  }, []);
 
   useEffect(() => {
-    fetchAllchats();
-  }, [selectedChat]);
+    setAllChats(chats);
+  }, [chats, selectedChat]);
 
   const onChange = (e) => {
     setSearch(e.target.value);
@@ -46,7 +31,7 @@ function Chats({ isChatsOpen }) {
       )
     );
     setSearchChats(filteredChats);
-  }, [search, allChats, selectedChat]);
+  }, [search, allChats]);
 
   return (
     <SideContainer isOpen={isChatsOpen}>

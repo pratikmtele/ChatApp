@@ -2,17 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Modal, SearchBar, UserItem } from "./index.js";
 import axios from "axios";
 import { URL } from "../assets/index.js";
-import { useDispatch, useSelector } from "react-redux";
-import { addChat } from "../features/chatsSlice.js";
+import useChatStore from "../store/useChatStore.jsx";
 import { useChat } from "../context/ChatContext.jsx";
 
 function CreateChat({ isOpen, setIsOpen, setAllChats }) {
   const [users, setUsers] = useState([]);
   const [searchUser, setSearchUser] = useState("");
-
-  const chats = useSelector((state) => state.chats.chats);
-
-  const dispatch = useDispatch();
+  const { addChat, chats } = useChatStore();
 
   const { _, setSelectedChat } = useChat();
 
@@ -64,20 +60,8 @@ function CreateChat({ isOpen, setIsOpen, setAllChats }) {
 
   const onChatCreate = async (userId) => {
     try {
-      const response = await axios.post(
-        `${URL}/api/v1/chats`,
-        { userId: userId },
-        { withCredentials: true }
-      );
-
-      console.log(response.data);
-
-      if (response.data.statusCode === 200) {
-        dispatch(addChat(response.data.data));
-        setAllChats((prevChats) => [response.data.data, ...prevChats]);
-      }
-
-      setSelectedChat(response.data.data);
+      const newChat = await addChat(userId);
+      setSelectedChat(newChat);
       setIsOpen(false);
     } catch (error) {
       console.log(error);

@@ -20,9 +20,12 @@ import {
 } from "../features/messageSlice.js";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { removeChat, removeGroupChat } from "../features/chatsSlice.js";
+import useAuthStore from "../store/useAuthStore.jsx";
+import useChatStore from "../store/useChatStore.jsx";
 
 function ChatContainer({ setIsOtherProfileOpen }) {
+  const { user: currentUser } = useAuthStore();
+  const { deleteChat } = useChatStore();
   const [isSearchbarOpen, setIsSearchbarOpen] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const messageRef = useRef(null);
@@ -31,8 +34,6 @@ function ChatContainer({ setIsOtherProfileOpen }) {
   const [fileInput, setFileInput] = useState(null);
   const [pending, setPending] = useState(false);
   const [previewFile, setPreviewFile] = useState(null);
-
-  const currentUser = useSelector((state) => state.user.userData);
 
   const { selectedChat, setSelectedChat } = useChat();
   const allMessages = useSelector((state) => state.messages.messages);
@@ -133,25 +134,9 @@ function ChatContainer({ setIsOtherProfileOpen }) {
 
   // chat delete function
   const onChatDelete = async () => {
-    try {
-      const response = await axios.delete(
-        `${APIURL}/api/v1/chats/${selectedChat._id}`,
-        { withCredentials: true }
-      );
-
-      if (response.data.statusCode < 400) {
-        if (selectedChat.isGroupChat) {
-          dispatch(removeGroupChat(response.data.data._id));
-        } else {
-          dispatch(removeChat(response.data.data._id));
-        }
-        setSelectedChat(null);
-        setIsOtherProfileOpen(false);
-        toast.success("Chat deleted successfully");
-      }
-    } catch (error) {
-      console.log("Chat deletion error: ", error);
-    }
+    deleteChat(selectedChat._id);
+    setSelectedChat(null);
+    setIsOtherProfileOpen(false);
   };
 
   const onMessageDelete = async (messageId) => {
